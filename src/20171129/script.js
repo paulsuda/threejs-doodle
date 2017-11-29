@@ -29,13 +29,13 @@ function main(rootEl) {
     scene.add( light );
   }
   {
-    const light = new THREE.PointLight( 0x333333, 2, 700 );
-    light.position.set( -600, -150, -100 );
+    const light = new THREE.PointLight( 0x333333, 2, 800 );
+    light.position.set( -350, -350, -100 );
     scene.add( light );
   }
   {
-    const light = new THREE.PointLight( 0x333333, 2, 900 );
-    light.position.set( 300, -850, 100 );
+    const light = new THREE.PointLight( 0x333333, 2, 1200 );
+    light.position.set( 200, -650, 100 );
     scene.add( light );
   }
 	const mesh = new THREE.Mesh( geometry, material );
