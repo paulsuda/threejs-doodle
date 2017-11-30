@@ -1,15 +1,22 @@
 
 
 const moduleList = [
-  require('./20171129-1/script'),
-  require('./20171129-2/script'),
+  require('./20171129/script'),
+  require('./20171128-1/script'),
+  require('./20171128-2/script'),
 ];
 
 function nextListen(nextFn){
   document.addEventListener('keydown', (event) => {
     const keyName = event.key;
-    console.log(keyName);
-    nextFn();
+    const nextKeys = [' ', 'Tab', 'Escape', 'n'];
+    if(nextKeys.includes(keyName)){
+      nextFn();
+    }
+    else{
+      console.log(keyName);
+    }
+
   }, false);
 }
 
