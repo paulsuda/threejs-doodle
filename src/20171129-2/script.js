@@ -1,15 +1,6 @@
 
 const THREE = require('three');
-
-function initRenderCanvas(rootEl){
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const renderer = new THREE.WebGLRenderer();
-  renderer.setPixelRatio( window.devicePixelRatio );
-  renderer.setSize( w, h );
-  rootEl.appendChild( renderer.domElement );
-  return [w, h, renderer];
-}
+const { initRenderCanvas } = require('../util');
 
 function main(rootEl) {
   console.log('hello world', rootEl);
