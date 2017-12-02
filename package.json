@@ -10,7 +10,7 @@
     "lint": "eslint src"
   },
   "author": "Paul Suda",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "css-loader": "^0.28.7",
     "eslint": "^4.12.0",
