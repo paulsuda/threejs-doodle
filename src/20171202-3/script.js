@@ -31,7 +31,7 @@ function updateVelocity(points, frameTimeSec){
 
 function updatePositions(points, frameTimeSec){
   const groundY = -1.2;
-  const bounceFactor = -0.4;
+  const bounceFactor = -0.9;
   const n = points.userData.velocities.length;
   for(let i = 0; i < n; i += 1){
     const v = points.userData.velocities[i];
