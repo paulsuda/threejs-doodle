@@ -34,7 +34,10 @@ function main(rootEl) {
     shininess: 19,
     opacity: 0.5,
   }  );
-  
+  var wireframeMaterial = new THREE.MeshBasicMaterial({
+    color: 0x338888,
+    wireframe: true,
+  });
   {
     const light = new THREE.PointLight( 0xddcccc, 2, 1500 );
     light.position.set( 200, 250, 300 );
@@ -52,11 +55,13 @@ function main(rootEl) {
   }
 
 	const mesh = new THREE.Mesh( geometry, material );
+  const wireframeMesh = new THREE.Mesh( geometry, wireframeMaterial );
 
   const lineMesh = makeLineMesh(geometry);
   const group = new THREE.Group();
   group.add(mesh);
   group.add(lineMesh);
+  group.add(wireframeMesh);
 
   scene.add( group );
 
