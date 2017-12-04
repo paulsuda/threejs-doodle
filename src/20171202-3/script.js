@@ -92,7 +92,11 @@ function main(rootEl) {
   c.getDelta();
 
   const animate = function(){
-    const frameTimeSec = c.getDelta();
+    let frameTimeSec = c.getDelta();
+    if(frameTimeSec < 0 || frameTimeSec > 0.5){
+      console.log('Bad frametimesec', frameTimeSec);
+      frameTimeSec = 0.05;
+    }
     updateVelocity(points, frameTimeSec);
     updatePositions(points, frameTimeSec);
     renderer.render( scene, camera );

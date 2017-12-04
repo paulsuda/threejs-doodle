@@ -38,9 +38,6 @@ function handleLocation(){
     const moduleListIndex = moduleList.length - routeIndex;
     return moduleListIndex;
   }
-  else{
-    alert(`Unknown route name "${routeName}"`);
-  }
   return null;
 }
 
