@@ -48,7 +48,6 @@ function updatePositions(points, frameTimeSec){
 }
 
 function main(rootEl) {
-  console.log('hello world', rootEl);
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
 	camera.position.z = 3.0;
@@ -86,7 +85,6 @@ function main(rootEl) {
 
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
-  // debugger;
 
   initVelocity(points);
 
@@ -95,14 +93,10 @@ function main(rootEl) {
 
   const animate = function(){
     const frameTimeSec = c.getDelta();
-    console.log('frameTimeSec', frameTimeSec, points);
     updateVelocity(points, frameTimeSec);
     updatePositions(points, frameTimeSec);
-    // group.rotation.x += 0.00005;
-    // group.rotation.y += 0.001;
     renderer.render( scene, camera );
     requestAnimationFrame( animate );
-    // debugger;
   };
   renderer.render( scene, camera );
   requestAnimationFrame( animate );

@@ -1,5 +1,4 @@
 
-
 const moduleList = [
   require('./20171202-3/script'),
   require('./20171202-2/script'),
@@ -11,7 +10,7 @@ const moduleList = [
   require('./20171128-1/script'),
 ];
 
-function nextListen(nextFn){
+function nextKeyListen(nextFn){
   document.addEventListener('keydown', (event) => {
     const keyName = event.key;
     const nextKeys = [' ', 'Tab', 'Escape', 'n'];
@@ -24,23 +23,65 @@ function nextListen(nextFn){
   }, false);
 }
 
+function routeNameFromLocation(location){
+  const hash = location.hash;
+  // Remove the '#'
+  const routeName = hash.substring(1);
+  const routeIndex = parseInt(routeName);
+  return routeIndex;
+}
+
+function handleLocation(){
+  const routeName = routeNameFromLocation(document.location);
+  const routeIndex = parseInt(routeName);
+  if((routeIndex >= 1) && (routeIndex < (moduleList.length + 1))){
+    const moduleListIndex = moduleList.length - routeIndex;
+    return moduleListIndex;
+  }
+  else{
+    alert(`Unknown route name "${routeName}"`);
+  }
+  return null;
+}
+
+function routeListenAndInit(moduleList, routeFn){
+  function gotoLocation(){
+    const routeIndex = handleLocation();
+    routeFn(routeIndex);
+  }
+  window.onpopstate = gotoLocation;
+  gotoLocation();
+}
+
 function showIndex(rootEl, i){
   const viewModuleMain = moduleList[i];
+  const urlIndex = moduleList.length - i;
   rootEl.innerHTML = '';
+  history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`)
   return viewModuleMain(rootEl);
 }
 
 function main(rootEl) {
   let currentIndex = 0;
   const moduleCount = moduleList.length;
-  showIndex(rootEl, currentIndex);
-  nextListen(function(){
+  console.log(document.location);
+
+  routeListenAndInit(moduleList, function(newIndex){
+    if(newIndex){
+      currentIndex = newIndex;
+    }
+    showIndex(rootEl, currentIndex);
+  });
+
+  nextKeyListen(function(){
     currentIndex += 1;
     if(currentIndex >= moduleCount){
       currentIndex = 0;
     }
     showIndex(rootEl, currentIndex);
   });
+
+  return;
 }
 
 module.exports = main;
