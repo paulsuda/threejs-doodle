@@ -2,7 +2,7 @@
 const THREE = require('three');
 const { initRenderCanvas } = require('../util');
 
-THREE.OrbitControls = require('./OrbitControls');
+const OrbitControls = require('./OrbitControls');
 
 function initLineText(shapes, material, translateX){
   var lineText = new THREE.Object3D();
@@ -47,12 +47,17 @@ function initMaterials(){
     color: 0x000000,
     side: THREE.DoubleSide // TODO maybe not needed?
   } );
-  var matLite = new THREE.MeshBasicMaterial( {
+  // var matLite = new THREE.MeshBasicMaterial( {
+  //   color: 0xFFD700,
+  //   transparent: true,
+  //   opacity: 0.4,
+  //   side: THREE.DoubleSide // TODO maybe not needed?
+  // } );
+  var matLite = new THREE.MeshPhongMaterial( {
     color: 0xFFD700,
-    transparent: true,
-    opacity: 0.4,
-    side: THREE.DoubleSide // TODO maybe not needed?
-  } );
+    specular: 0x888888,
+    shininess: 9
+  }  );
   return [matDark, matLite];
 }
 
@@ -60,9 +65,14 @@ function main(rootEl) {
   const [w, h, renderer] = initRenderCanvas(rootEl);
   var camera, scene;
   camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
-  camera.position.set( 0, - 400, 600 );
-  var controls = new THREE.OrbitControls( camera );
+  camera.position.set( 671.2857887174272, 3.9035474152048, 256.4159882863828 );
+  var controls = new OrbitControls( camera );
   controls.target.set( 0, 0, 0 );
+  controls.minAzimuthAngle = 0.1;
+  controls.maxAzimuthAngle = 1.5;
+  controls.minPolarAngle = 1.1;
+  controls.maxPolarAngle = 1.8;
+  1.213, 1.563
   controls.update();
   scene = new THREE.Scene();
   scene.background = new THREE.Color( 0xCCF2FF );
@@ -86,23 +96,30 @@ function main(rootEl) {
     scene.add( lineText );
 
 
+    {
+      const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
+      light.position.set( -120, 10, 300 );
+      scene.add( light );
+    }
+
     animate();
     function animate() {
+      console.log(controls, controls.getAzimuthalAngle(), controls.getPolarAngle());
       requestAnimationFrame( animate );
       render();
     }
     function render() {
       renderer.render( scene, camera );
     }
+    window.addEventListener( 'resize', onWindowResize, false );
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }
   });
 }
 
-// window.addEventListener( 'resize', onWindowResize, false );
-// function onWindowResize() {
-//   camera.aspect = window.innerWidth / window.innerHeight;
-//   camera.updateProjectionMatrix();
-//   renderer.setSize( window.innerWidth, window.innerHeight );
-// }
 
 
 
