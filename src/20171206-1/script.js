@@ -29,7 +29,7 @@ function main(rootEl) {
       opacity: 0.4,
       side: THREE.DoubleSide
     } );
-    var message = "Testing";
+    var message = "Look\nOut!";
     var shapes = font.generateShapes( message, 100, 2 );
     var geometry = new THREE.ShapeGeometry( shapes );
     geometry.computeBoundingBox();
