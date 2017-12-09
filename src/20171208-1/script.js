@@ -50,15 +50,6 @@ function main(rootEl, [w,h]) {
   controls.maxPolarAngle = 1.8;
   controls.update();
 
-  document.addEventListener('keydown', (event) => {
-    if(event.key == 'f'){
-      messageText += 'u';
-    }
-    else if(event.key == 'g'){
-      messageText += 'n';
-    }
-    return false;
-  });
 
 
   scene.background = new THREE.Color( 0xFFF233  );
@@ -77,22 +68,38 @@ function main(rootEl, [w,h]) {
       light.position.set( -120, 10, 300 );
       scene.add( light );
     }
+    scene.add( lineText );
+
+    document.addEventListener('keydown', (event) => {
+      if(event.key == 'f'){
+        messageText += 'u';
+      }
+      else if(event.key == 'g'){
+        messageText += 'n';
+      }
+      else if(event.key == 'h'){
+        console.log('h', controls, camera);
+      }
+      return false;
+    });
+
 
     animate();
+
+
+    function updateText
 
     function animate() {
       requestAnimationFrame( animate );
       render();
     }
     function render() {
-      var message = messageText; //messageString();
-      var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
+      var [shapes, textShape, xMid] = TextHelper.textShape(font, messageText, 120);
       text.geometry = textShape
       // make line shape ( N.B. edge view remains visible )
       var holeShapes = TextHelper.holeShapes(shapes);
       shapes.push.apply( shapes, holeShapes );
       TextHelper.lineText(shapes, matDark, xMid, lineText);
-      scene.add( lineText );
 
       renderer.render( scene, camera );
     }
