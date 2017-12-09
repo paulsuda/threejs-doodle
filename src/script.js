@@ -1,5 +1,6 @@
 
 const moduleList = [
+  require('./20171208-1/script'),
   require('./20171207-1/script'),
   require('./20171206-1/script'),
   require('./20171202-3/script'),
@@ -29,7 +30,7 @@ function keyListen(callbackFn){
       callbackFn('previous');
     }
     else{
-      console.log(keyName);
+      console.log('keyListen() unknown key', keyName);
     }
   }, false);
 }
