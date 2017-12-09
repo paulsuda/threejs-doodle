@@ -1,6 +1,6 @@
 
 const THREE = require('three');
-const { initRenderCanvas } = require('../util');
+const { initRenderCanvas } = require('../shared/util');
 
 function cubeFrame(size){
   const geometry = new THREE.BoxBufferGeometry( size, size, size );

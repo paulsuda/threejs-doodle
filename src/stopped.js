@@ -1,6 +1,6 @@
 
 const THREE = require('three');
-const { initRenderCanvas, htmlMessage } = require('./util');
+const { initRenderCanvas, htmlMessage } = require('./shared/util');
 
 function main(rootEl) {
   console.log('hello world', rootEl);

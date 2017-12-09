@@ -1,8 +1,8 @@
 
 const THREE = require('three');
-const { initRenderCanvas } = require('../util');
-const TextHelper = require('../text-helper');
-const OrbitControls = require('../OrbitControls');
+const { initRenderCanvas } = require('../shared/util');
+const TextHelper = require('../shared/text-helper');
+const OrbitControls = require('../shared/OrbitControls');
 
 function handleResize(camera) {
   camera.aspect = window.innerWidth / window.innerHeight;
