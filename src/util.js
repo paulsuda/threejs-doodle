@@ -26,4 +26,14 @@ function initRenderCanvas(rootEl, renderer, windowSizeCallback){
   return [w, h, renderer];
 }
 
-module.exports = { initRenderCanvas };
+
+function htmlMessage(rootEl, messageText){
+  const p = document.createElement('p');
+  const t = document.createTextNode(messageText);
+  p.className = 'float';
+  p.appendChild(t);
+  rootEl.appendChild(p);
+  return p;
+}
+
+module.exports = { initRenderCanvas, htmlMessage };

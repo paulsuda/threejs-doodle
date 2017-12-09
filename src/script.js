@@ -9,14 +9,23 @@ const moduleList = [
   require('./20171129/script'),
   require('./20171128-2/script'),
   require('./20171128-1/script'),
+  require('./stopped'),
 ];
 
-function nextKeyListen(nextFn){
+function keyListen(callbackFn){
   document.addEventListener('keydown', (event) => {
     const keyName = event.key;
-    const nextKeys = [' ', 'Tab', 'Escape', 'n'];
-    if(nextKeys.includes(keyName)){
-      nextFn();
+    const stopKeys = ['Escape', 'q'];
+    const nextKeys = [' ', 'Tab', 'n', ']'];
+    const prevKeys = ['p', '['];
+    if(stopKeys.includes(keyName)){
+      callbackFn('stop');
+    }
+    else if(nextKeys.includes(keyName)){
+      callbackFn('next');
+    }
+    else if(prevKeys.includes(keyName)){
+      callbackFn('previous');
     }
     else{
       console.log(keyName);
@@ -35,8 +44,8 @@ function routeNameFromLocation(location){
 function handleLocation(){
   const routeName = routeNameFromLocation(document.location);
   const routeIndex = parseInt(routeName);
-  if((routeIndex >= 1) && (routeIndex < (moduleList.length + 1))){
-    const moduleListIndex = moduleList.length - routeIndex;
+  if((routeIndex >= 0) && (routeIndex < (moduleList.length + 1))){
+    const moduleListIndex = moduleList.length - routeIndex - 1;
     return moduleListIndex;
   }
   return null;
@@ -52,8 +61,9 @@ function routeListenAndInit(moduleList, routeFn){
 }
 
 function showIndex(rootEl, i){
+  console.log(`showing index ${i}`, moduleList);
   const viewModuleMain = moduleList[i];
-  const urlIndex = moduleList.length - i;
+  const urlIndex = moduleList.length - i - 1;
   rootEl.innerHTML = '';
   history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`);
   /* Run the module. */
@@ -73,10 +83,21 @@ function main(rootEl) {
     showIndex(rootEl, currentIndex);
   });
 
-  nextKeyListen(function(){
-    currentIndex += 1;
-    if(currentIndex >= moduleCount){
-      currentIndex = 0;
+  keyListen(function(actionName){
+    if(actionName == 'next'){
+      currentIndex += 1;
+      if(currentIndex >= moduleCount){
+        currentIndex = 0;
+      }
+    }
+    else if(actionName == 'previous'){
+      currentIndex -= 1;
+      if(currentIndex < 0){
+        currentIndex = (moduleCount - 1);
+      }
+    }
+    else if(actionName == 'stop'){
+      currentIndex = moduleCount - 1;
     }
     showIndex(rootEl, currentIndex);
   });
