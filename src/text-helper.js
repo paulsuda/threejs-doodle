@@ -1,12 +1,12 @@
 const THREE = require('three');
 
-
 const TextHelper = {
   lineText: initLineText,
   textShape: initTextShape,
   holeShapes: initHoleShapes,
 };
 
+/* line outline of the letter shapes */
 function initLineText(shapes, material, translateX){
   var lineText = new THREE.Object3D();
   for ( var i = 0; i < shapes.length; i ++ ) {
@@ -20,6 +20,7 @@ function initLineText(shapes, material, translateX){
   return lineText;
 }
 
+/* for each letter shape, accumulate the hole shapes. */
 function initHoleShapes(shapes){
   var holeShapes = [];
   for ( var i = 0; i < shapes.length; i ++ ) {
@@ -34,6 +35,7 @@ function initHoleShapes(shapes){
   return holeShapes;
 }
 
+/* returns shapes that represent letters of the message */
 function initTextShape(font, message, size, divisions){
   var textShape = new THREE.BufferGeometry();
   var shapes = font.generateShapes( message, size, divisions );

@@ -4,6 +4,11 @@ const { initRenderCanvas } = require('../util');
 const TextHelper = require('../text-helper');
 const OrbitControls = require('../OrbitControls');
 
+function handleResize(camera) {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+}
+
 function initMaterials(){
   var matDark = new THREE.LineBasicMaterial( {
     color: 0x000000,
@@ -18,9 +23,10 @@ function initMaterials(){
 }
 
 function main(rootEl) {
-  const [w, h, renderer] = initRenderCanvas(rootEl);
-  var camera, scene;
-  camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+  var camera, scene, renderer, w, h;
+  new THREE.WebGLRenderer();
+  camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
+  [w, h, renderer] = initRenderCanvas(rootEl, renderer, (rw, rh) => { return handleResize(camera, rw, rh) } );
   camera.position.set( 671.2857887174272, 3.9035474152048, 256.4159882863828 );
   var controls = new OrbitControls( camera );
   controls.target.set( 0, 0, 0 );
@@ -68,12 +74,6 @@ function main(rootEl) {
       renderer.render( scene, camera );
     }
 
-    window.addEventListener( 'resize', onWindowResize, false );
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize( window.innerWidth, window.innerHeight );
-    }
 
   });
 }
