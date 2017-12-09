@@ -1,5 +1,6 @@
 
 const moduleList = [
+  require('./20171207-1/script'),
   require('./20171206-1/script'),
   require('./20171202-3/script'),
   require('./20171202-2/script'),

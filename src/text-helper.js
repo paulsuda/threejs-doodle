@@ -7,9 +7,17 @@ const TextHelper = {
 };
 
 /* line outline of the letter shapes */
-function initLineText(shapes, material, translateX){
-  var lineText = new THREE.Object3D();
-  for ( var i = 0; i < shapes.length; i ++ ) {
+function initLineText(shapes, material, translateX, lineText){
+  var i;
+  if(lineText){
+    for (i = lineText.children.length - 1; i >= 0; i--) {
+      lineText.remove(lineText.children[i]);
+    }
+  }
+  else{
+    lineText = new THREE.Object3D();
+  }
+  for ( i = 0; i < shapes.length; i ++ ) {
     var shape = shapes[ i ];
     var points = shape.getPoints();
     var geometry = new THREE.BufferGeometry().setFromPoints( points );
