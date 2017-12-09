@@ -7,7 +7,7 @@ const moduleList = [
   require('./20171202-1/script'),
   require('./20171201-2/script'),
   require('./20171201-1/script'),
-  require('./20171129/script'),
+  require('./20171129-1/script'),
   require('./20171128-2/script'),
   require('./20171128-1/script'),
   require('./stopped'),
