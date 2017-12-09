@@ -37,6 +37,7 @@ function initHoleShapes(shapes){
 
 /* returns shapes that represent letters of the message */
 function initTextShape(font, message, size, divisions){
+  divisions = divisions || 2;
   var textShape = new THREE.BufferGeometry();
   var shapes = font.generateShapes( message, size, divisions );
   var geometry = new THREE.ShapeGeometry( shapes );

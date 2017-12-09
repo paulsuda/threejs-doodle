@@ -22,28 +22,35 @@ function initMaterials(){
   return [matDark, matLite];
 }
 
-function main(rootEl) {
-  var camera, scene, renderer, w, h;
-  new THREE.WebGLRenderer();
-  camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
-  [w, h, renderer] = initRenderCanvas(rootEl, renderer, (rw, rh) => { return handleResize(camera, rw, rh) } );
-  camera.position.set( 671.2857887174272, 3.9035474152048, 256.4159882863828 );
+function main(rootEl, [w,h]) {
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
+  var renderer;
+  [w, h, renderer] = initRenderCanvas(
+    rootEl, false, (rw, rh) => { return handleResize(camera, rw, rh) }
+  );
+  const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
+  console.log(window.innerWidth, window.innerHeight)
+  camera.position.set(
+    771.2857887174272 * windowScale.x,
+    0,
+    256.4159882863828 * windowScale.z
+  );
   var controls = new OrbitControls( camera );
   controls.target.set( 0, 0, 0 );
   controls.minAzimuthAngle = 0.1;
   controls.maxAzimuthAngle = 1.5;
   controls.minPolarAngle = 1.1;
   controls.maxPolarAngle = 1.8;
-  1.213, 1.563
   controls.update();
-  scene = new THREE.Scene();
+
   scene.background = new THREE.Color( 0xCCF2FF );
   var loader = new THREE.FontLoader();
   loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
     var d = new Date();
     var message = d.toLocaleDateString('en-US');
     var [matDark, matLite] = initMaterials();
-    var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 100, 2);
+    var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
 
     // make shape ( N.B. edge view not visible )
     var text = new THREE.Mesh( textShape, matLite );

@@ -55,8 +55,10 @@ function showIndex(rootEl, i){
   const viewModuleMain = moduleList[i];
   const urlIndex = moduleList.length - i;
   rootEl.innerHTML = '';
-  history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`)
-  return viewModuleMain(rootEl);
+  history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`);
+  /* Run the module. */
+  const windowSize = [window.innerWidth, window.innerHeight];
+  return viewModuleMain(rootEl, windowSize);
 }
 
 function main(rootEl) {
