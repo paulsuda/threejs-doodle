@@ -37,9 +37,9 @@ function main(rootEl, [w,h]) {
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   console.log(window.innerWidth, window.innerHeight)
   camera.position.set(
-    771.2857887174272 * windowScale.x,
+    2771.2857887174272 * windowScale.x,
     0,
-    256.4159882863828 * windowScale.z
+    1256.4159882863828 * windowScale.z
   );
   var controls = new OrbitControls( camera );
   controls.target.set( 0, 0, 0 );
@@ -53,23 +53,11 @@ function main(rootEl, [w,h]) {
   var loader = new THREE.FontLoader();
   loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
     var [matDark, matLite] = initMaterials();
-
-    var message = messageString();
-    var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
-
     // make shape ( N.B. edge view not visible )
-    var text = new THREE.Mesh( textShape, matLite );
+    var text = new THREE.Mesh( new THREE.Geometry(), matLite );
     text.position.z = 5;
     scene.add( text );
-
-    // make line shape ( N.B. edge view remains visible )
-    var holeShapes = TextHelper.holeShapes(shapes);
-    shapes.push.apply( shapes, holeShapes );
-
     var lineText = new THREE.Object3D();
-    TextHelper.lineText(shapes, matDark, xMid, lineText);
-    scene.add( lineText );
-
 
     {
       const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
@@ -84,6 +72,15 @@ function main(rootEl, [w,h]) {
       render();
     }
     function render() {
+      var message = messageString();
+      var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
+      text.geometry = textShape
+      // make line shape ( N.B. edge view remains visible )
+      var holeShapes = TextHelper.holeShapes(shapes);
+      shapes.push.apply( shapes, holeShapes );
+      TextHelper.lineText(shapes, matDark, xMid, lineText);
+      scene.add( lineText );
+
       renderer.render( scene, camera );
     }
 
