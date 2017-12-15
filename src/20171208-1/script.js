@@ -87,7 +87,7 @@ function main(rootEl, [w,h]) {
     animate();
 
 
-    function updateText
+    // function updateText
 
     function animate() {
       requestAnimationFrame( animate );
