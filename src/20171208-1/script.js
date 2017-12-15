@@ -75,7 +75,7 @@ function main(rootEl, [w,h]) {
         messageText += 'u';
       }
       else if(event.key == 'g'){
-        messageText += 'n';
+        messageText += 'z';
       }
       else if(event.key == 'h'){
         console.log('h', controls, camera);
