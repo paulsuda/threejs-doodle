@@ -130,8 +130,27 @@ function main(rootEl) {
   const c = new THREE.Clock();
   c.getDelta();
 
-  const [renderTarget, returnValuesBuffer] = computeInit(geometryVertices.array, textureWidth, renderer);
-  console.log('computeInit run', geometryVertices.array, returnValuesBuffer);
+  var times = 100;
+  function limitedConsoleLog(){
+    if(times > 0){
+      times += -1;
+      console.log(arguments);
+    }
+  }
+
+  function updatePositions(inputVerticesArray, frameTimeSec){
+    const [renderTarget, returnValuesBuffer] =
+      computeInit(inputVerticesArray, textureWidth, renderer);
+    limitedConsoleLog('computeInit run', inputVerticesArray, returnValuesBuffer);
+    return returnValuesBuffer;
+  }
+
+  //
+  // const [renderTargetA, returnValuesBufferA] = computeInit(geometryVertices.array, textureWidth, renderer);
+  // console.log('computeInit run', geometryVertices.array, returnValuesBufferA);
+  //
+  // const [renderTargetB, returnValuesBufferB] = computeInit(returnValuesBufferA, textureWidth, renderer);
+  // console.log('computeInit run', geometryVertices.array, returnValuesBufferB);
 
   const animate = function(){
     let frameTimeSec = c.getDelta();
@@ -139,7 +158,9 @@ function main(rootEl) {
       console.log('Bad frametimesec', frameTimeSec);
       frameTimeSec = 0.05;
     }
-    // updatePositions(geometryVertices, frameTimeSec);
+    const a = updatePositions(geometryVertices.array, frameTimeSec);
+    geometryVertices.setArray(a);
+    geometryVertices.needsUpdate = true;
     renderer.render( scene, camera );
     requestAnimationFrame( animate );
   };
