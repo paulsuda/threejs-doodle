@@ -1,29 +1,12 @@
 
 const THREE = require('three');
-const { initRenderCanvas } = require('../shared/util');
-
-function cubeFrame(size){
-  const geometry = new THREE.BoxBufferGeometry( size, size, size );
-  const material = new THREE.MeshBasicMaterial({
-    color: 0xffff22,
-    wireframe: true,
-  });
-  const mesh = new THREE.Mesh( geometry, material );
-  return mesh;
-}
-
+const { cubeFrame, initRenderCanvas, computeTextureSupportCheck } = require('../shared/util');
 
 function makeComputeShaderMaterial(textureWidth){
   var passThruUniforms = {
     texture: { value: null }
   };
-  const computeFragmentShader = "uniform sampler2D texture;\n" +
-                                "void main() {\n" +
-                                "       vec2 uv = gl_FragCoord.xy / resolution.xy;\n" +
-                                "       vec4 t = texture2D( texture, uv );\n" +
-                                "       t.y += 0.2;\n" +
-                                "       gl_FragColor = t;\n" +
-                                "}\n";
+  const computeFragmentShader = require('./compute.glsl');
   const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
   const shaderMaterial = new THREE.ShaderMaterial({
     uniforms: passThruUniforms,
@@ -36,15 +19,7 @@ function makeComputeShaderMaterial(textureWidth){
 }
 
 function computeInit(verticesArray, textureWidth, renderer){
-
-  if ( ! renderer.extensions.get( "OES_texture_float" ) ) {
-    return "No OES_texture_float support for float textures.";
-  }
-
-  if ( renderer.capabilities.maxVertexTextures === 0 ) {
-    return "No support for vertex shader textures.";
-  }
-
+  computeTextureSupportCheck(renderer);
   var scene = new THREE.Scene();
   var camera = new THREE.Camera();
   camera.position.z = 1;
@@ -55,18 +30,13 @@ function computeInit(verticesArray, textureWidth, renderer){
   scene.add(computeMesh);
   const renderTarget = makeRenderTarget(textureWidth);
 
-  console.log('*****', textureWidth, verticesArray);
   const initialValueTexture = new THREE.DataTexture(
     verticesArray, textureWidth, textureWidth, THREE.RGBAFormat, THREE.FloatType );
-  console.log('*****');
   initialValueTexture.needsUpdate = true;
   passThruUniforms.texture.value = initialValueTexture;
-  console.log('renderer', renderer.render( scene, camera, renderTarget ));
-  console.log(renderTarget);
-
+  renderer.render( scene, camera, renderTarget );
   const returnValuesBuffer = new Float32Array( textureWidth * textureWidth * 4 );
   renderer.readRenderTargetPixels( renderTarget, 0, 0, textureWidth, textureWidth, returnValuesBuffer );
-  // passThruUniforms.texture.value = renderTarget;
   return [renderTarget, returnValuesBuffer];
 }
 
