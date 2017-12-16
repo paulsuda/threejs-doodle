@@ -11,7 +11,7 @@ function cubeFrame(size){
   const mesh = new THREE.Mesh( geometry, material );
   return mesh;
 }
-//
+
 // function initVelocity(points){
 //   const n = points.geometry.vertices.length;
 //   points.userData.velocities = new Array(n);
@@ -120,6 +120,21 @@ function cubeFrame(size){
 //   );
 // }
 
+function updatePositions(vertices, frameTimeSec){
+  const groundY = -1.2;
+  const n = vertices.array.length;
+  const velocity = -0.31;
+  for(let i = 0; i < n; i += 3){
+    // vertices.array[i] += 0.0;
+    vertices.array[i + 1] += frameTimeSec * velocity;
+    // vertices.array[i + 2] += 0.0;
+    if(vertices.array[i + 1] < groundY){
+      vertices.array[i + 1] = groundY;
+    }
+  }
+  vertices.needsUpdate = true;
+}
+
 function pointsBufferGeometry() {
   const textureWidth = 4;
   const scaleFactor = 0.9;
@@ -134,7 +149,6 @@ function pointsBufferGeometry() {
     vertices.array[i * 3 + 2] = f - 0.5;
   }
   bufferGeometry.addAttribute('position', vertices);
-  console.log(bufferGeometry)
   bufferGeometry.scale(scaleFactor, scaleFactor, scaleFactor);
   return [bufferGeometry, vertices];
 }
@@ -144,10 +158,10 @@ function main(rootEl) {
   const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
 	camera.position.z = 3.0;
 	const scene = new THREE.Scene();
-	var [geometry, geometryVertices] = pointsBufferGeometry();
+	var [bufferGeometry, geometryVertices] = pointsBufferGeometry();
   var material = new THREE.PointsMaterial( {
     size: 0.06,
-    color: 0x33ff33,
+    color: 0x55ee33,
     opacity: 0.75,
     transparent: true,
   }  );
@@ -158,8 +172,8 @@ function main(rootEl) {
     transparent: true,
   }  );
 
-	const points = new THREE.Points( geometry, material );
-  geometry.dynamic = true;
+	const points = new THREE.Points( bufferGeometry, material );
+  bufferGeometry.dynamic = true;
 
   const geometry2 = new THREE.SphereGeometry( 0.5, 13, 9 );
   const points2 = new THREE.Points( geometry2, material2 );
@@ -173,24 +187,19 @@ function main(rootEl) {
 
   scene.add( group );
 
-  // geometry.computeFlatVertexNormals();
-
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
-  // initVelocity(points);
-
-  // const c = new THREE.Clock();
-  // c.getDelta();
+  const c = new THREE.Clock();
+  c.getDelta();
 
   const animate = function(){
-    // let frameTimeSec = c.getDelta();
-    // if(frameTimeSec < 0 || frameTimeSec > 0.5){
-    //   console.log('Bad frametimesec', frameTimeSec);
-    //   frameTimeSec = 0.05;
-    // }
-    // updateVelocity(points, frameTimeSec);
-    // updatePositions(points, frameTimeSec);
+    let frameTimeSec = c.getDelta();
+    if(frameTimeSec < 0 || frameTimeSec > 0.5){
+      console.log('Bad frametimesec', frameTimeSec);
+      frameTimeSec = 0.05;
+    }
+    updatePositions(geometryVertices, frameTimeSec);
     renderer.render( scene, camera );
     requestAnimationFrame( animate );
   };
