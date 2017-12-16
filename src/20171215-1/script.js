@@ -17,7 +17,13 @@ function makeComputeShaderMaterial(textureWidth){
   var passThruUniforms = {
     texture: { value: null }
   };
-  const computeFragmentShader = "void main() { gl_FragColor = vec4(1.0, 2.0, 3.0, 4.0); }\n";
+  const computeFragmentShader = "uniform sampler2D texture;\n" +
+                                "void main() {\n" +
+                                "       vec2 uv = gl_FragCoord.xy / resolution.xy;\n" +
+                                "       vec4 t = texture2D( texture, uv );\n" +
+                                "       t.y += 0.2;\n" +
+                                "       gl_FragColor = t;\n" +
+                                "}\n";
   const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
   const shaderMaterial = new THREE.ShaderMaterial({
     uniforms: passThruUniforms,
@@ -49,8 +55,10 @@ function computeInit(verticesArray, textureWidth, renderer){
   scene.add(computeMesh);
   const renderTarget = makeRenderTarget(textureWidth);
 
+  console.log('*****', textureWidth, verticesArray);
   const initialValueTexture = new THREE.DataTexture(
     verticesArray, textureWidth, textureWidth, THREE.RGBAFormat, THREE.FloatType );
+  console.log('*****');
   initialValueTexture.needsUpdate = true;
   passThruUniforms.texture.value = initialValueTexture;
   console.log('renderer', renderer.render( scene, camera, renderTarget ));
@@ -81,7 +89,7 @@ function updatePositions(vertices, frameTimeSec){
   const groundY = -1.2;
   const n = vertices.array.length;
   const velocity = -0.31;
-  for(let i = 0; i < n; i += 3){
+  for(let i = 0; i < n; i += 4){
     // vertices.array[i] += 0.0;
     vertices.array[i + 1] += frameTimeSec * velocity;
     // vertices.array[i + 2] += 0.0;
@@ -96,13 +104,14 @@ function pointsBufferGeometry(textureWidth) {
   const scaleFactor = 0.9;
   const pointCount = textureWidth * textureWidth;
   const bufferGeometry = new THREE.BufferGeometry();
-  const vertexFloatArray = new Float32Array( pointCount * 3 );
-	const vertices = new THREE.BufferAttribute( vertexFloatArray, 3 );
+  const vertexFloatArray = new Float32Array( pointCount * 4 );
+	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
   for(var i = 0; i < pointCount; i++){
     const f = parseFloat(i) / parseFloat(pointCount);
-    vertices.array[i * 3] =  f - 0.5;
-    vertices.array[i * 3 + 1] = f - 0.5;
-    vertices.array[i * 3 + 2] = f - 0.5;
+    vertices.array[i * 4] =  f - 0.5;
+    vertices.array[i * 4 + 1] = f - 0.5;
+    vertices.array[i * 4 + 2] = f - 0.5;
+    vertices.array[i * 4 + 3] = 1.0;
   }
   bufferGeometry.addAttribute('position', vertices);
   bufferGeometry.scale(scaleFactor, scaleFactor, scaleFactor);
@@ -160,7 +169,7 @@ function main(rootEl) {
       console.log('Bad frametimesec', frameTimeSec);
       frameTimeSec = 0.05;
     }
-    updatePositions(geometryVertices, frameTimeSec);
+    // updatePositions(geometryVertices, frameTimeSec);
     renderer.render( scene, camera );
     requestAnimationFrame( animate );
   };
