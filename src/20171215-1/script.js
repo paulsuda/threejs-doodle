@@ -55,32 +55,17 @@ function makeRenderTarget(textureWidth){
   );
 }
 
-function updatePositions(vertices, frameTimeSec){
-  const groundY = -1.2;
-  const n = vertices.array.length;
-  const velocity = -0.31;
-  for(let i = 0; i < n; i += 4){
-    // vertices.array[i] += 0.0;
-    vertices.array[i + 1] += frameTimeSec * velocity;
-    // vertices.array[i + 2] += 0.0;
-    if(vertices.array[i + 1] < groundY){
-      vertices.array[i + 1] = groundY;
-    }
-  }
-  vertices.needsUpdate = true;
-}
-
 function pointsBufferGeometry(textureWidth) {
-  const scaleFactor = 0.9;
+  const scaleFactor = 3.2;
   const pointCount = textureWidth * textureWidth;
   const bufferGeometry = new THREE.BufferGeometry();
   const vertexFloatArray = new Float32Array( pointCount * 4 );
 	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
   for(var i = 0; i < pointCount; i++){
     const f = parseFloat(i) / parseFloat(pointCount);
-    vertices.array[i * 4] =  f - 0.5;
-    vertices.array[i * 4 + 1] = f - 0.5;
-    vertices.array[i * 4 + 2] = f - 0.5;
+    vertices.array[i * 4] =  Math.random() - 0.5;
+    vertices.array[i * 4 + 1] = Math.random() - 0.5;
+    vertices.array[i * 4 + 2] = Math.random() - 0.5;
     vertices.array[i * 4 + 3] = 1.0;
   }
   bufferGeometry.addAttribute('position', vertices);
@@ -89,7 +74,7 @@ function pointsBufferGeometry(textureWidth) {
 }
 
 function main(rootEl) {
-  const textureWidth = 4;
+  const textureWidth = 64;
 
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
@@ -144,13 +129,6 @@ function main(rootEl) {
     limitedConsoleLog('computeInit run', inputVerticesArray, returnValuesBuffer);
     return returnValuesBuffer;
   }
-
-  //
-  // const [renderTargetA, returnValuesBufferA] = computeInit(geometryVertices.array, textureWidth, renderer);
-  // console.log('computeInit run', geometryVertices.array, returnValuesBufferA);
-  //
-  // const [renderTargetB, returnValuesBufferB] = computeInit(returnValuesBufferA, textureWidth, renderer);
-  // console.log('computeInit run', geometryVertices.array, returnValuesBufferB);
 
   const animate = function(){
     let frameTimeSec = c.getDelta();
