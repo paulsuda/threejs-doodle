@@ -29,42 +29,6 @@ function makeComputeShaderMaterial(textureWidth){
   return [shaderMaterial, passThruUniforms];
 }
 
-
-// function initVelocity(points){
-//   const n = points.geometry.vertices.length;
-//   points.userData.velocities = new Array(n);
-//   for(let i = 0; i < n; i += 1){
-//     points.userData.velocities[i] = new THREE.Vector3(0.0, 0.0, 0.0);
-//   }
-// }
-//
-// function updateVelocity(points, frameTimeSec){
-//   const n = points.userData.velocities.length;
-//   const gAcceleration = -1.8;
-//   const g = new THREE.Vector3(0.0, gAcceleration * frameTimeSec, 0.0);
-//   for(let i = 0; i < n; i += 1){
-//     points.userData.velocities[i].add(g);
-//   }
-// }
-//
-// function updatePositions(points, frameTimeSec){
-//   const groundY = -1.2;
-//   const bounceFactor = -0.9;
-//   const n = points.userData.velocities.length;
-//   for(let i = 0; i < n; i += 1){
-//     const v = points.userData.velocities[i];
-//     points.geometry.vertices[i].x += frameTimeSec * v.x;
-//     points.geometry.vertices[i].y += frameTimeSec * v.y;
-//     points.geometry.vertices[i].z += frameTimeSec * v.z;
-//     if(points.geometry.vertices[i].y < groundY){
-//       points.geometry.vertices[i].y = groundY;
-//       /* Bounce! */
-//       points.userData.velocities[i].y = points.userData.velocities[i].y * bounceFactor;
-//     }
-//   }
-//   points.geometry.verticesNeedUpdate = true;
-// }
-//
 function computeInit(verticesArray, textureWidth, renderer){
 
   if ( ! renderer.extensions.get( "OES_texture_float" ) ) {
@@ -85,11 +49,6 @@ function computeInit(verticesArray, textureWidth, renderer){
   scene.add(computeMesh);
   const renderTarget = makeRenderTarget(textureWidth);
 
-  // var a = vertices.array;
-        // var a = new Float32Array( textureWidth * textureWidth * 4 );
-      //   for(var i = 0; i < pointCount; i++){
-      //     a[i] =
-      //   }
   const initialValueTexture = new THREE.DataTexture(
     verticesArray, textureWidth, textureWidth, THREE.RGBAFormat, THREE.FloatType );
   initialValueTexture.needsUpdate = true;
@@ -100,7 +59,6 @@ function computeInit(verticesArray, textureWidth, renderer){
   const returnValuesBuffer = new Float32Array( textureWidth * textureWidth * 4 );
   renderer.readRenderTargetPixels( renderTarget, 0, 0, textureWidth, textureWidth, returnValuesBuffer );
   // passThruUniforms.texture.value = renderTarget;
-  debugger;
   return [renderTarget, returnValuesBuffer];
 }
 
