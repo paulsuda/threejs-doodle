@@ -12,6 +12,24 @@ function cubeFrame(size){
   return mesh;
 }
 
+
+function makeComputeShaderMaterial(textureWidth){
+  var passThruUniforms = {
+    texture: { value: null }
+  };
+  const computeFragmentShader = "void main() { gl_FragColor = vec4(1.0, 2.0, 3.0, 4.0); }\n";
+  const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
+  const shaderMaterial = new THREE.ShaderMaterial({
+    uniforms: passThruUniforms,
+    vertexShader: passThroughVertexShader,
+    fragmentShader: computeFragmentShader,
+  });
+  shaderMaterial.defines.resolution =
+    'vec2( ' + textureWidth.toFixed( 1 ) + ', ' + textureWidth.toFixed( 1 ) + " )";
+  return [shaderMaterial, passThruUniforms];
+}
+
+
 // function initVelocity(points){
 //   const n = points.geometry.vertices.length;
 //   points.userData.velocities = new Array(n);
@@ -47,78 +65,59 @@ function cubeFrame(size){
 //   points.geometry.verticesNeedUpdate = true;
 // }
 //
-// function computeInit(textureWidth, renderer){
-//
-//   if ( ! renderer.extensions.get( "OES_texture_float" ) ) {
-//     return "No OES_texture_float support for float textures.";
-//   }
-//
-//   if ( renderer.capabilities.maxVertexTextures === 0 ) {
-//     return "No support for vertex shader textures.";
-//   }
-//
-//
-//   var scene = new THREE.Scene();
-//   var camera = new THREE.Camera();
-//   camera.position.z = 1;
-//   var passThruUniforms = {
-//     texture: { value: null }
-//   };
-//
-//
-//   const computeFragmentShader = '';
-//   const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
-//   const shaderMaterial = new THREE.ShaderMaterial({
-//     uniforms: passThruUniforms,
-//     vertexShader: passThroughVertexShader,
-//     fragmentShader: computeFragmentShader,
-//   });
-//   shaderMaterial.defines.resolution = 'vec2( ' + textureWidth.toFixed( 1 ) + ', ' + textureWidth.toFixed( 1 ) + " )";
-//
-//
-//
-//   // var passThruShader = createShaderMaterial( getPassThroughFragmentShader(), passThruUniforms );
-//   var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 2, 2 ), shaderMaterial );
-//   scene.add(mesh);
-//
-//   var currentTargetIndex = 0;
-//   function nextTargetIndex(){
-//     return (currentTargetIndex == 0 ? 1 : 0);
-//   }
-//
-//   const renderTargets = [
-//     makeRenderTarget(textureWidth), makeRenderTarget(textureWidth)
-//   ];
-//
-//   var a = new Float32Array( textureWidth * textureWidth * 4 );
-//   for(var i = 0; i < pointCount; i++){
-//     a[i] =
-//   }
-//   const initialValueTexture = new THREE.DataTexture(
-//     a, textureWidth, textureWidth, THREE.RGBAFormat, THREE.FloatType );
-//   initialValueTexture.needsUpdate = true;
-//
-//   passThruUniforms.texture.value = initialValueTexture;
-//   // mesh.material = shaderMaterial;
-//   renderer.render( scene, camera, renderTargets[ currentTargetIndex ] );
-//   passThruUniforms.texture.value = renderTargets[ currentTargetIndex ];
-//   currentTargetIndex = nextTargetIndex();
-//
-// }
-//
-// function makeRenderTarget(textureWidth){
-//   return new THREE.WebGLRenderTarget(
-//     textureWidth, textureWidth, {
-//       wrapS: THREE.ClampToEdgeWrapping,
-//       wrapT: THREE.ClampToEdgeWrapping,
-//       minFilter: THREE.NearestFilter,
-//       magFilter: THREE.NearestFilter,
-//       format: THREE.RGBAFormat,
-//       type: THREE.FloatType,
-//       stencilBuffer: false
-//     }
-//   );
-// }
+function computeInit(verticesArray, textureWidth, renderer){
+
+  if ( ! renderer.extensions.get( "OES_texture_float" ) ) {
+    return "No OES_texture_float support for float textures.";
+  }
+
+  if ( renderer.capabilities.maxVertexTextures === 0 ) {
+    return "No support for vertex shader textures.";
+  }
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.Camera();
+  camera.position.z = 1;
+  const computePlane = new THREE.PlaneBufferGeometry( 2, 2 );
+
+  const [shaderMaterial, passThruUniforms] = makeComputeShaderMaterial(textureWidth);
+  const computeMesh = new THREE.Mesh( computePlane, shaderMaterial );
+  scene.add(computeMesh);
+  const renderTarget = makeRenderTarget(textureWidth);
+
+  // var a = vertices.array;
+        // var a = new Float32Array( textureWidth * textureWidth * 4 );
+      //   for(var i = 0; i < pointCount; i++){
+      //     a[i] =
+      //   }
+  const initialValueTexture = new THREE.DataTexture(
+    verticesArray, textureWidth, textureWidth, THREE.RGBAFormat, THREE.FloatType );
+  initialValueTexture.needsUpdate = true;
+  passThruUniforms.texture.value = initialValueTexture;
+  console.log('renderer', renderer.render( scene, camera, renderTarget ));
+  console.log(renderTarget);
+
+  const returnValuesBuffer = new Float32Array( textureWidth * textureWidth * 4 );
+  renderer.readRenderTargetPixels( renderTarget, 0, 0, textureWidth, textureWidth, returnValuesBuffer );
+  // passThruUniforms.texture.value = renderTarget;
+  debugger;
+  return [renderTarget, returnValuesBuffer];
+}
+
+function makeRenderTarget(textureWidth){
+  const options = {
+    wrapS: THREE.ClampToEdgeWrapping,
+    wrapT: THREE.ClampToEdgeWrapping,
+    minFilter: THREE.NearestFilter,
+    magFilter: THREE.NearestFilter,
+    format: THREE.RGBAFormat,
+    type: THREE.FloatType,
+    stencilBuffer: false
+  };
+  return new THREE.WebGLRenderTarget(
+    textureWidth, textureWidth, options
+  );
+}
 
 function updatePositions(vertices, frameTimeSec){
   const groundY = -1.2;
@@ -135,8 +134,7 @@ function updatePositions(vertices, frameTimeSec){
   vertices.needsUpdate = true;
 }
 
-function pointsBufferGeometry() {
-  const textureWidth = 4;
+function pointsBufferGeometry(textureWidth) {
   const scaleFactor = 0.9;
   const pointCount = textureWidth * textureWidth;
   const bufferGeometry = new THREE.BufferGeometry();
@@ -154,11 +152,13 @@ function pointsBufferGeometry() {
 }
 
 function main(rootEl) {
+  const textureWidth = 4;
+
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
 	camera.position.z = 3.0;
 	const scene = new THREE.Scene();
-	var [bufferGeometry, geometryVertices] = pointsBufferGeometry();
+	var [bufferGeometry, geometryVertices] = pointsBufferGeometry(textureWidth);
   var material = new THREE.PointsMaterial( {
     size: 0.06,
     color: 0x55ee33,
@@ -192,6 +192,9 @@ function main(rootEl) {
 
   const c = new THREE.Clock();
   c.getDelta();
+
+  const [renderTarget, returnValuesBuffer] = computeInit(geometryVertices.array, textureWidth, renderer);
+  console.log('computeInit run', geometryVertices.array, returnValuesBuffer);
 
   const animate = function(){
     let frameTimeSec = c.getDelta();
