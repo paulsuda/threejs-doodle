@@ -136,7 +136,7 @@ function pointsBufferGeometry() {
   bufferGeometry.addAttribute('position', vertices);
   console.log(bufferGeometry)
   bufferGeometry.scale(scaleFactor, scaleFactor, scaleFactor);
-  return bufferGeometry;
+  return [bufferGeometry, vertices];
 }
 
 function main(rootEl) {
@@ -144,7 +144,7 @@ function main(rootEl) {
   const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
 	camera.position.z = 3.0;
 	const scene = new THREE.Scene();
-	var geometry = pointsBufferGeometry();
+	var [geometry, geometryVertices] = pointsBufferGeometry();
   var material = new THREE.PointsMaterial( {
     size: 0.06,
     color: 0x33ff33,
