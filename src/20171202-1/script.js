@@ -68,12 +68,11 @@ function main(rootEl) {
   geometry.computeFlatVertexNormals();
 
   const animate = () => {
-    requestAnimationFrame( animate );
     group.rotation.x += 0.00005;
     group.rotation.y += 0.001;
     renderer.render( scene, camera );
   };
-  animate();
+  return animate;
 }
 
 module.exports = main;

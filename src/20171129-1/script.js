@@ -38,12 +38,11 @@ function main(rootEl) {
 
   const animate = () => {
     helper.update();
-    requestAnimationFrame( animate );
     mesh.rotation.x += 0.005;
     mesh.rotation.y += 0.01;
     renderer.render( scene, camera );
   };
-  animate();
+  return animate;
 }
 
 module.exports = main;

@@ -100,10 +100,8 @@ function main(rootEl) {
     updateVelocity(points, frameTimeSec);
     updatePositions(points, frameTimeSec);
     renderer.render( scene, camera );
-    requestAnimationFrame( animate );
   };
-  renderer.render( scene, camera );
-  requestAnimationFrame( animate );
+  return animate;
 }
 
 module.exports = main;

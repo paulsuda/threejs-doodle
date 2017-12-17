@@ -70,10 +70,8 @@ function main(rootEl) {
 
   const animate = function(){
     renderer.render( scene, camera );
-    requestAnimationFrame( animate );
   };
-  renderer.render( scene, camera );
-  requestAnimationFrame( animate );
+  return animate;
 }
 
 module.exports = main;

@@ -50,42 +50,35 @@ function main(rootEl, [w,h]) {
   controls.update();
 
   scene.background = new THREE.Color( 0xCCF2FF );
+  var [matDark, matLite] = initMaterials();
+  var text = new THREE.Mesh( new THREE.Geometry(), matLite );
+  text.position.z = 5;
+  scene.add( text );
+  // make shape ( N.B. edge view not visible )
+  var lineText = new THREE.Object3D();
+  {
+    const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
+    light.position.set( -120, 10, 300 );
+    scene.add( light );
+  }
   var loader = new THREE.FontLoader();
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
-    var [matDark, matLite] = initMaterials();
-    // make shape ( N.B. edge view not visible )
-    var text = new THREE.Mesh( new THREE.Geometry(), matLite );
-    text.position.z = 5;
-    scene.add( text );
-    var lineText = new THREE.Object3D();
-
-    {
-      const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
-      light.position.set( -120, 10, 300 );
-      scene.add( light );
-    }
-
-    animate();
-
-    function animate() {
-      requestAnimationFrame( animate );
-      render();
-    }
-    function render() {
-      var message = messageString();
-      var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
-      text.geometry = textShape
-      // make line shape ( N.B. edge view remains visible )
-      var holeShapes = TextHelper.holeShapes(shapes);
-      shapes.push.apply( shapes, holeShapes );
-      TextHelper.lineText(shapes, matDark, xMid, lineText);
-      scene.add( lineText );
-
-      renderer.render( scene, camera );
-    }
-
-
+  var font = null;
+  function render() {
+    if(font == null){ return; }
+    var message = messageString();
+    var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
+    text.geometry = textShape
+    // make line shape ( N.B. edge view remains visible )
+    var holeShapes = TextHelper.holeShapes(shapes);
+    shapes.push.apply( shapes, holeShapes );
+    TextHelper.lineText(shapes, matDark, xMid, lineText);
+    scene.add( lineText );
+    renderer.render( scene, camera );
+  }
+  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
+    font = loadedFont;
   });
+  return render;
 }
 
 module.exports = main;

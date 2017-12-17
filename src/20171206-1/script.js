@@ -47,12 +47,7 @@ function main(rootEl, [w,h]) {
   scene.background = new THREE.Color( 0xCCF2FF );
   var loader = new THREE.FontLoader();
   loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
-    var d = new Date();
-    var message = d.toLocaleDateString('en-US');
-    var [matDark, matLite] = initMaterials();
     var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
-
-    // make shape ( N.B. edge view not visible )
     var text = new THREE.Mesh( textShape, matLite );
     text.position.z = 5;
     scene.add( text );
@@ -63,26 +58,23 @@ function main(rootEl, [w,h]) {
 
     var lineText = TextHelper.lineText(shapes, matDark, xMid);
     scene.add( lineText );
-
-
-    {
-      const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
-      light.position.set( -120, 10, 300 );
-      scene.add( light );
-    }
-
-    animate();
-
-    function animate() {
-      requestAnimationFrame( animate );
-      render();
-    }
-    function render() {
-      renderer.render( scene, camera );
-    }
-
-
   });
+
+  var d = new Date();
+  var message = d.toLocaleDateString('en-US');
+  var [matDark, matLite] = initMaterials();
+
+  {
+    const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
+    light.position.set( -120, 10, 300 );
+    scene.add( light );
+  }
+
+  function render() {
+    renderer.render( scene, camera );
+  }
+
+  return render;
 }
 
 

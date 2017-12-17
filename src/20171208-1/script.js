@@ -22,11 +22,6 @@ function initMaterials(){
   return [matDark, matLite];
 }
 
-function messageString(){
-  const d = new Date();
-  return d.toLocaleDateString('en-US') + ' ' + d.toLocaleTimeString('en-US');
-}
-
 function main(rootEl, [w,h]) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
@@ -50,62 +45,53 @@ function main(rootEl, [w,h]) {
   controls.maxPolarAngle = 1.8;
   controls.update();
 
-
-
   scene.background = new THREE.Color( 0xFFF233  );
   var loader = new THREE.FontLoader();
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
-    var [matDark, matLite] = initMaterials();
-
-    // make shape ( N.B. edge view not visible )
-    var text = new THREE.Mesh( new THREE.Geometry(), matLite );
-    text.position.z = 5;
-    scene.add( text );
-    var lineText = new THREE.Object3D();
-
-    {
-      const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
-      light.position.set( -120, 10, 300 );
-      scene.add( light );
-    }
-    scene.add( lineText );
-
-    document.addEventListener('keydown', (event) => {
-      if(event.key == 'f'){
-        messageText += 'u';
-      }
-      else if(event.key == 'g'){
-        messageText += 'z';
-      }
-      else if(event.key == 'h'){
-        console.log('h', controls, camera);
-      }
-      return false;
-    });
-
-
-    animate();
-
-
-    // function updateText
-
-    function animate() {
-      requestAnimationFrame( animate );
-      render();
-    }
-    function render() {
-      var [shapes, textShape, xMid] = TextHelper.textShape(font, messageText, 120);
-      text.geometry = textShape
-      // make line shape ( N.B. edge view remains visible )
-      var holeShapes = TextHelper.holeShapes(shapes);
-      shapes.push.apply( shapes, holeShapes );
-      TextHelper.lineText(shapes, matDark, xMid, lineText);
-
-      renderer.render( scene, camera );
-    }
-
-
+  var font = null;
+  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
+    font = loadedFont;
   });
+
+  var [matDark, matLite] = initMaterials();
+
+  // make shape ( N.B. edge view not visible )
+  var text = new THREE.Mesh( new THREE.Geometry(), matLite );
+  text.position.z = 5;
+  scene.add( text );
+  var lineText = new THREE.Object3D();
+
+  {
+    const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
+    light.position.set( -120, 10, 300 );
+    scene.add( light );
+  }
+  scene.add( lineText );
+
+  document.addEventListener('keydown', (event) => {
+    if(event.key == 'f'){
+      messageText += 'u';
+    }
+    else if(event.key == 'g'){
+      messageText += 'z';
+    }
+    else if(event.key == 'h'){
+      console.log('h', controls, camera);
+    }
+    return false;
+  });
+
+  function render() {
+    if(font == null){ return; }
+    var [shapes, textShape, xMid] = TextHelper.textShape(font, messageText, 120);
+    text.geometry = textShape
+    // make line shape ( N.B. edge view remains visible )
+    var holeShapes = TextHelper.holeShapes(shapes);
+    shapes.push.apply( shapes, holeShapes );
+    TextHelper.lineText(shapes, matDark, xMid, lineText);
+    renderer.render( scene, camera );
+  }
+
+  return render;
 }
 
 module.exports = main;

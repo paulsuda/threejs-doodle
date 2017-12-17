@@ -50,12 +50,11 @@ function main(rootEl) {
   geometry.computeFlatVertexNormals();
 
   const animate = () => {
-    requestAnimationFrame( animate );
     mesh.rotation.x += 0.00005;
     mesh.rotation.y += 0.001;
     renderer.render( scene, camera );
   };
-  animate();
+  return animate;
 }
 
 module.exports = main;
