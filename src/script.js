@@ -1,4 +1,6 @@
 
+const THREE = require('three');
+
 const moduleList = [
   require('./20171215-1/script'),
   require('./20171214-1/script'),
@@ -64,6 +66,8 @@ function routeListenAndInit(moduleList, routeFn){
   gotoLocation();
 }
 
+var _lastAnimationFrameRequestId = null;
+
 function showIndex(rootEl, i){
   console.log(`showing index ${i}`, moduleList);
   const viewModuleMain = moduleList[i];
@@ -72,7 +76,25 @@ function showIndex(rootEl, i){
   history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`);
   /* Run the module. */
   const windowSize = [window.innerWidth, window.innerHeight];
-  return viewModuleMain(rootEl, windowSize);
+  const animateHandler = viewModuleMain(rootEl, windowSize);
+  /* Cancel any outstanding frame requests. */
+  window.cancelAnimationFrame(_lastAnimationFrameRequestId);
+  /* Request frames and run animateHandler() to render. */
+  if(typeof(animateHandler) == 'function'){
+    const c = new THREE.Clock();
+    c.getDelta();
+    const animate = function(){
+      let frameTimeSec = c.getDelta();
+      if(frameTimeSec < 0 || frameTimeSec > 0.5){
+        console.log('Bad frametimesec', frameTimeSec);
+        frameTimeSec = 0.05;
+      }
+      animateHandler(frameTimeSec);
+      _lastAnimationFrameRequestId = window.requestAnimationFrame( animate );
+    };
+    _lastAnimationFrameRequestId = window.requestAnimationFrame( animate );
+  }
+  return;
 }
 
 function main(rootEl) {

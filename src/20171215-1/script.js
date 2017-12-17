@@ -130,20 +130,14 @@ function main(rootEl) {
     return returnValuesBuffer;
   }
 
-  const animate = function(){
-    let frameTimeSec = c.getDelta();
-    if(frameTimeSec < 0 || frameTimeSec > 0.5){
-      console.log('Bad frametimesec', frameTimeSec);
-      frameTimeSec = 0.05;
-    }
+  function animate(frameTimeSec){
     const a = updatePositions(geometryVertices.array, frameTimeSec);
     geometryVertices.setArray(a);
     geometryVertices.needsUpdate = true;
     renderer.render( scene, camera );
-    requestAnimationFrame( animate );
-  };
-  renderer.render( scene, camera );
-  requestAnimationFrame( animate );
+  }
+
+  return animate;
 }
 
 module.exports = main;
