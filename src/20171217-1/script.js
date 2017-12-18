@@ -7,7 +7,8 @@ class ComputeShaderRunner {
     this.renderer = renderer;
     this.textureWidth = textureWidth;
     this.textureUniformInfo = [
-      {name: 'positionTexture', format: THREE.RGBAFormat}
+      {name: 'positionTexture', format: THREE.RGBAFormat},
+      {name: 'velocityTexture', format: THREE.RGBAFormat},
     ];
     this.vertexShaderCode = require('./computeVertex.glsl');
     this.fragmentShaderCode = require('./computeFragment.glsl');
@@ -77,7 +78,7 @@ class ComputeShaderRunner {
       this.textureWidth, this.textureWidth,
       texFormat, THREE.FloatType );
     tex.needsUpdate = true;
-    this.passThruUniforms[uniformInfo.name].value = tex;
+    uniformInfo._uniformValue.value = tex;
   }
 
   computeRun(verticesArray, returnValuesArray) {
@@ -149,13 +150,24 @@ function main(rootEl) {
   const shaderRunner = new ComputeShaderRunner(renderer, textureWidth);
   var returnValuesArray = shaderRunner.computeReturnBuffer();
 
-  function updatePositions(inArray, outArray, frameTimeSec){
-    shaderRunner.computeRun({positionTexture: inArray}, outArray);
+  var velocitiesArray = new Float32Array(geometryVertices.array.length);
+  for(var i = 0; i < velocitiesArray.length; i += 4){
+    velocitiesArray[i] = 0.0;
+    velocitiesArray[i + 1] = -0.05;
+    velocitiesArray[i + 2] = 0.0;
+    velocitiesArray[i + 3] = 1.0;
   }
 
   function animate(frameTimeSec){
     const oldVertices = geometryVertices.array;
-    updatePositions(geometryVertices.array, returnValuesArray, frameTimeSec);
+
+    shaderRunner.computeRun({
+      positionTexture: geometryVertices.array,
+      velocityTexture: velocitiesArray,
+      frameTimeSec: frameTimeSec,
+    }, returnValuesArray);
+
+
     geometryVertices.setArray(returnValuesArray);
     geometryVertices.needsUpdate = true;
     returnValuesArray = oldVertices;

@@ -1,10 +1,13 @@
 
 uniform sampler2D positionTexture;
+uniform sampler2D velocityTexture;
+uniform float frameTimeSec;
+
 void main() {
    vec2 uv = gl_FragCoord.xy / resolution.xy;
    vec4 t = texture2D( positionTexture, uv );
-   /* Fall down. */
-   t.y -= 0.02;
+   vec4 v = texture2D( velocityTexture, uv );
+   t += v * 0.1;
    /* Until the ground. */
    if(t.y < -1.2){
      t.y = -1.2;
