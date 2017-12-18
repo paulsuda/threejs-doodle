@@ -1,8 +1,8 @@
 
-uniform sampler2D texture;
+uniform sampler2D positionTexture;
 void main() {
    vec2 uv = gl_FragCoord.xy / resolution.xy;
-   vec4 t = texture2D( texture, uv );
+   vec4 t = texture2D( positionTexture, uv );
    /* Fall down. */
    t.y -= 0.02;
    /* Until the ground. */

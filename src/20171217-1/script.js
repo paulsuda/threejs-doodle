@@ -39,7 +39,7 @@ class ComputeShaderRunner {
 
   makeComputeShaderMaterial(){
     var passThruUniforms = {
-      texture: { value: null }
+      positionTexture: { value: null }
     };
     const computeFragmentShader = require('./computeFragment.glsl');
     const passThroughVertexShader = require('./computeVertex.glsl');
@@ -54,22 +54,33 @@ class ComputeShaderRunner {
   }
 
   computeReturnBuffer() {
-    const returnValuesBuffer =
+    const returnValuesArray =
       new Float32Array( this.textureWidth * this.textureWidth * 4 );
-    return returnValuesBuffer;
+    return returnValuesArray;
   }
 
-  computeRun(verticesArray, returnValuesBuffer) {
-    const initialValueTexture = new THREE.DataTexture(
-      verticesArray,
+  computeTextureFromArray(uniformInfo, dataArray){
+    console.log(arguments);
+    const texFormat = uniformInfo.format ? uniformInfo.format : THREE.RGBAFormat;
+    const tex = new THREE.DataTexture(
+      dataArray,
       this.textureWidth, this.textureWidth,
-      THREE.RGBAFormat, THREE.FloatType );
-    initialValueTexture.needsUpdate = true;
-    this.passThruUniforms.texture.value = initialValueTexture;
+      texFormat, THREE.FloatType );
+    tex.needsUpdate = true;
+    this.passThruUniforms[uniformInfo.name].value = tex;
+  }
+
+  computeRun(verticesArray, returnValuesArray) {
+    const textureUniformInfo = [
+      {name: 'positionTexture', format: THREE.RGBAFormat}
+    ];
+    textureUniformInfo.forEach((uniformInfo) => {
+      this.computeTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
+    });
     this.renderer.render( this.scene, this.camera, this.renderTarget );
     this.renderer.readRenderTargetPixels( this.renderTarget,
-      0, 0, this.textureWidth, this.textureWidth, returnValuesBuffer );
-    return returnValuesBuffer;
+      0, 0, this.textureWidth, this.textureWidth, returnValuesArray );
+    return returnValuesArray;
   }
 }
 
@@ -130,18 +141,18 @@ function main(rootEl) {
   group.rotation.y += 0.1;
 
   const shaderRunner = new ComputeShaderRunner(renderer, textureWidth);
-  var returnValuesBuffer = shaderRunner.computeReturnBuffer();
+  var returnValuesArray = shaderRunner.computeReturnBuffer();
 
   function updatePositions(inArray, outArray, frameTimeSec){
-    shaderRunner.computeRun(inArray, outArray);
+    shaderRunner.computeRun({positionTexture: inArray}, outArray);
   }
 
   function animate(frameTimeSec){
     const oldVertices = geometryVertices.array;
-    updatePositions(geometryVertices.array, returnValuesBuffer, frameTimeSec);
-    geometryVertices.setArray(returnValuesBuffer);
+    updatePositions(geometryVertices.array, returnValuesArray, frameTimeSec);
+    geometryVertices.setArray(returnValuesArray);
     geometryVertices.needsUpdate = true;
-    returnValuesBuffer = oldVertices;
+    returnValuesArray = oldVertices;
     renderer.render( scene, camera );
   }
 
