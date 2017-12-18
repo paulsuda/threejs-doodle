@@ -9,13 +9,14 @@ class ComputeShaderRunner {
     this.textureUniformInfo = [
       {name: 'positionTexture', format: THREE.RGBAFormat},
       {name: 'velocityTexture', format: THREE.RGBAFormat},
+      {name: 'frameTimeSec', format: THREE.FloatType},
     ];
     this.vertexShaderCode = require('./computeVertex.glsl');
     this.fragmentShaderCode = require('./computeFragment.glsl');
     computeTextureSupportCheck(renderer);
     this.renderTarget = this.makeRenderTarget();
     [this.scene, this.camera] = this.makeSceneCamera();
-    [this.shaderMaterial, this.passThruUniforms] = this.makeComputeShaderMaterial();
+    [this.shaderMaterial, this.shaderUniforms] = this.makeComputeShaderMaterial();
     this.computeMesh = this.makeComputeMesh();
     this.scene.add(this.computeMesh);
   }
@@ -48,7 +49,7 @@ class ComputeShaderRunner {
     );
   }
 
-  makeComputeShaderMaterial(){
+  makeComputeShaderMaterial(otherUniforms){
     var passThruUniforms = {};
     this.textureUniformInfo.forEach((uniformInfo) => {
       const uniformValue = { value: null };
@@ -83,7 +84,12 @@ class ComputeShaderRunner {
 
   computeRun(verticesArray, returnValuesArray) {
     this.textureUniformInfo.forEach((uniformInfo) => {
-      this.computeTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
+      if(uniformInfo.format == THREE.RGBAFormat){
+        this.computeTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
+      }
+      else{
+        uniformInfo._uniformValue.value = verticesArray[uniformInfo.name];
+      }
     });
     this.renderer.render( this.scene, this.camera, this.renderTarget );
     this.renderer.readRenderTargetPixels( this.renderTarget,
