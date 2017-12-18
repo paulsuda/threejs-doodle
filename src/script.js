@@ -70,7 +70,7 @@ function routeListenAndInit(moduleList, routeFn){
 var _lastAnimationFrameRequestId = null;
 
 function showIndex(rootEl, i){
-  console.log(`showing index ${i}`, moduleList);
+  console.log(`showing index ${i}`);
   const viewModuleMain = moduleList[i];
   const urlIndex = moduleList.length - i - 1;
   rootEl.innerHTML = '';
