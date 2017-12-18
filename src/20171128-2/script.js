@@ -3,7 +3,6 @@ const THREE = require('three');
 const { initRenderCanvas } = require('../shared/util');
 
 function main(rootEl) {
-  console.log('hello world', rootEl);
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 70, w / h, 1, 1000 );
 	camera.position.z = 400;

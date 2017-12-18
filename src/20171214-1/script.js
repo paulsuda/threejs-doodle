@@ -26,7 +26,6 @@ function pointsBufferGeometry() {
     vertices.array[i * 3 + 2] = f - 0.5;
   }
   bufferGeometry.addAttribute('position', vertices);
-  console.log(bufferGeometry)
   bufferGeometry.scale(scaleFactor, scaleFactor, scaleFactor);
   return [bufferGeometry, vertices];
 }

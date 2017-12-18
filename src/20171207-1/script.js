@@ -35,7 +35,6 @@ function main(rootEl, [w,h]) {
     rootEl, false, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
-  console.log(window.innerWidth, window.innerHeight)
   camera.position.set(
     2771.2857887174272 * windowScale.x,
     0,

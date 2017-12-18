@@ -100,7 +100,6 @@ function showIndex(rootEl, i){
 function main(rootEl) {
   let currentIndex = 0;
   const moduleCount = moduleList.length;
-  console.log(document.location);
 
   routeListenAndInit(moduleList, function(newIndex){
     if(newIndex){

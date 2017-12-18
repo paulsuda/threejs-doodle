@@ -88,15 +88,7 @@ function main(rootEl) {
 
   initVelocity(points);
 
-  const c = new THREE.Clock();
-  c.getDelta();
-
-  const animate = function(){
-    let frameTimeSec = c.getDelta();
-    if(frameTimeSec < 0 || frameTimeSec > 0.5){
-      console.log('Bad frametimesec', frameTimeSec);
-      frameTimeSec = 0.05;
-    }
+  const animate = function(frameTimeSec){
     updateVelocity(points, frameTimeSec);
     updatePositions(points, frameTimeSec);
     renderer.render( scene, camera );

@@ -119,7 +119,6 @@ function main(rootEl) {
   function limitedConsoleLog(){
     if(times > 0){
       times += -1;
-      console.log(arguments);
     }
   }
 
