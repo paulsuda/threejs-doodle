@@ -80,7 +80,6 @@ class ComputeShaderRunner {
     this.renderer.render( this.scene, this.camera, this.renderTarget );
     this.renderer.readRenderTargetPixels( this.renderTarget,
       0, 0, this.textureWidth, this.textureWidth, returnValuesArray );
-    return returnValuesArray;
   }
 }
 
