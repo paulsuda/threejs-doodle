@@ -129,14 +129,6 @@ function main(rootEl) {
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
-  var times = 100;
-  function limitedConsoleLog(){
-    if(times > 0){
-      times += -1;
-      console.log(arguments);
-    }
-  }
-
   const shaderRunner = new ComputeShaderRunner(renderer, textureWidth);
   var returnValuesBuffer = shaderRunner.computeReturnBuffer();
 
