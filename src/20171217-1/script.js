@@ -2,58 +2,69 @@
 const THREE = require('three');
 const { cubeFrame, initRenderCanvas, computeTextureSupportCheck } = require('../shared/util');
 
-function makeComputeShaderMaterial(textureWidth){
-  var passThruUniforms = {
-    texture: { value: null }
-  };
-  const computeFragmentShader = require('./compute.glsl');
-  const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
-  const shaderMaterial = new THREE.ShaderMaterial({
-    uniforms: passThruUniforms,
-    vertexShader: passThroughVertexShader,
-    fragmentShader: computeFragmentShader,
-  });
-  shaderMaterial.defines.resolution =
-    'vec2( ' + textureWidth.toFixed( 1 ) + ', ' + textureWidth.toFixed( 1 ) + " )";
-  return [shaderMaterial, passThruUniforms];
+class ComputeShaderRunner {
+  constructor(renderer, textureWidth) {
+    computeTextureSupportCheck(renderer);
+    this.renderer = renderer;
+    this.textureWidth = textureWidth;
+    this.renderTarget = this.makeRenderTarget();
+    [this.shaderMaterial, this.passThruUniforms] = this.makeComputeShaderMaterial();
+
+  }
+
+  makeRenderTarget() {
+    const options = {
+      wrapS: THREE.ClampToEdgeWrapping,
+      wrapT: THREE.ClampToEdgeWrapping,
+      minFilter: THREE.NearestFilter,
+      magFilter: THREE.NearestFilter,
+      format: THREE.RGBAFormat,
+      type: THREE.FloatType,
+      stencilBuffer: false
+    };
+    return new THREE.WebGLRenderTarget(
+      this.textureWidth, this.textureWidth, options
+    );
+  }
+
+  makeComputeShaderMaterial(){
+    var passThruUniforms = {
+      texture: { value: null }
+    };
+    const computeFragmentShader = require('./computeFragment.glsl');
+    const passThroughVertexShader = require('./computeVertex.glsl');
+    const shaderMaterial = new THREE.ShaderMaterial({
+      uniforms: passThruUniforms,
+      vertexShader: passThroughVertexShader,
+      fragmentShader: computeFragmentShader,
+    });
+    shaderMaterial.defines.resolution =
+      'vec2( ' + this.textureWidth.toFixed( 1 ) + ', ' + this.textureWidth.toFixed( 1 ) + " )";
+    return [shaderMaterial, passThruUniforms];
+  }
+
+  computeRun(verticesArray) {
+    var scene = new THREE.Scene();
+    var camera = new THREE.Camera();
+    camera.position.z = 1;
+    const computePlane = new THREE.PlaneBufferGeometry( 2, 2 );
+    const computeMesh = new THREE.Mesh( computePlane, this.shaderMaterial );
+    scene.add(computeMesh);
+    const initialValueTexture = new THREE.DataTexture(
+      verticesArray, this.textureWidth, this.textureWidth, THREE.RGBAFormat, THREE.FloatType );
+    initialValueTexture.needsUpdate = true;
+    this.passThruUniforms.texture.value = initialValueTexture;
+    this.renderer.render( scene, camera, this.renderTarget );
+    const returnValuesBuffer =
+      new Float32Array( this.textureWidth * this.textureWidth * 4 );
+    this.renderer.readRenderTargetPixels( this.renderTarget,
+      0, 0, this.textureWidth, this.textureWidth, returnValuesBuffer );
+    return returnValuesBuffer;
+  }
+
 }
 
-function computeInit(verticesArray, textureWidth, renderer){
-  computeTextureSupportCheck(renderer);
-  var scene = new THREE.Scene();
-  var camera = new THREE.Camera();
-  camera.position.z = 1;
-  const computePlane = new THREE.PlaneBufferGeometry( 2, 2 );
 
-  const [shaderMaterial, passThruUniforms] = makeComputeShaderMaterial(textureWidth);
-  const computeMesh = new THREE.Mesh( computePlane, shaderMaterial );
-  scene.add(computeMesh);
-  const renderTarget = makeRenderTarget(textureWidth);
-
-  const initialValueTexture = new THREE.DataTexture(
-    verticesArray, textureWidth, textureWidth, THREE.RGBAFormat, THREE.FloatType );
-  initialValueTexture.needsUpdate = true;
-  passThruUniforms.texture.value = initialValueTexture;
-  renderer.render( scene, camera, renderTarget );
-  const returnValuesBuffer = new Float32Array( textureWidth * textureWidth * 4 );
-  renderer.readRenderTargetPixels( renderTarget, 0, 0, textureWidth, textureWidth, returnValuesBuffer );
-  return [renderTarget, returnValuesBuffer];
-}
-
-function makeRenderTarget(textureWidth){
-  const options = {
-    wrapS: THREE.ClampToEdgeWrapping,
-    wrapT: THREE.ClampToEdgeWrapping,
-    minFilter: THREE.NearestFilter,
-    magFilter: THREE.NearestFilter,
-    format: THREE.RGBAFormat,
-    type: THREE.FloatType,
-    stencilBuffer: false
-  };
-  return new THREE.WebGLRenderTarget(
-    textureWidth, textureWidth, options
-  );
-}
 
 function pointsBufferGeometry(textureWidth) {
   const scaleFactor = 3.2;
@@ -62,7 +73,6 @@ function pointsBufferGeometry(textureWidth) {
   const vertexFloatArray = new Float32Array( pointCount * 4 );
 	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
   for(var i = 0; i < pointCount; i++){
-    const f = parseFloat(i) / parseFloat(pointCount);
     vertices.array[i * 4] =  Math.random() - 0.5;
     vertices.array[i * 4 + 1] = Math.random() - 0.5;
     vertices.array[i * 4 + 2] = Math.random() - 0.5;
@@ -83,7 +93,7 @@ function main(rootEl) {
 	var [bufferGeometry, geometryVertices] = pointsBufferGeometry(textureWidth);
   var material = new THREE.PointsMaterial( {
     size: 0.06,
-    color: 0x55ee33,
+    color: 0xee3333,
     opacity: 0.75,
     transparent: true,
   }  );
@@ -119,9 +129,10 @@ function main(rootEl) {
     }
   }
 
+  const shaderRunner = new ComputeShaderRunner(renderer, textureWidth);
+
   function updatePositions(inputVerticesArray, frameTimeSec){
-    const [renderTarget, returnValuesBuffer] =
-      computeInit(inputVerticesArray, textureWidth, renderer);
+    const returnValuesBuffer = shaderRunner.computeRun(inputVerticesArray);
     limitedConsoleLog('computeInit run', inputVerticesArray, returnValuesBuffer);
     return returnValuesBuffer;
   }
