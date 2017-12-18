@@ -71,10 +71,7 @@ class ComputeShaderRunner {
       0, 0, this.textureWidth, this.textureWidth, returnValuesBuffer );
     return returnValuesBuffer;
   }
-
 }
-
-
 
 function pointsBufferGeometry(textureWidth) {
   const scaleFactor = 3.2;
