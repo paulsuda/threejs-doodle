@@ -4,15 +4,25 @@ const { cubeFrame, initRenderCanvas, computeTextureSupportCheck } = require('../
 
 class ComputeShaderRunner {
   constructor(renderer, textureWidth) {
-    computeTextureSupportCheck(renderer);
     this.renderer = renderer;
     this.textureWidth = textureWidth;
+    this.textureUniformInfo = [
+      {name: 'positionTexture', format: THREE.RGBAFormat}
+    ];
+    this.vertexShaderCode = require('./computeVertex.glsl');
+    this.fragmentShaderCode = require('./computeFragment.glsl');
+    computeTextureSupportCheck(renderer);
     this.renderTarget = this.makeRenderTarget();
     [this.scene, this.camera] = this.makeSceneCamera();
     [this.shaderMaterial, this.passThruUniforms] = this.makeComputeShaderMaterial();
-    this.computePlane = new THREE.PlaneBufferGeometry( 2, 2 );
-    this.computeMesh = new THREE.Mesh( this.computePlane, this.shaderMaterial );
+    this.computeMesh = this.makeComputeMesh();
     this.scene.add(this.computeMesh);
+  }
+
+  makeComputeMesh(){
+    const computePlane = new THREE.PlaneBufferGeometry( 2, 2 );
+    const computeMesh = new THREE.Mesh(computePlane, this.shaderMaterial);
+    return computeMesh;
   }
 
   makeSceneCamera() {
@@ -38,15 +48,16 @@ class ComputeShaderRunner {
   }
 
   makeComputeShaderMaterial(){
-    var passThruUniforms = {
-      positionTexture: { value: null }
-    };
-    const computeFragmentShader = require('./computeFragment.glsl');
-    const passThroughVertexShader = require('./computeVertex.glsl');
+    var passThruUniforms = {};
+    this.textureUniformInfo.forEach((uniformInfo) => {
+      const uniformValue = { value: null };
+      passThruUniforms[uniformInfo.name] = uniformValue;
+      uniformInfo._uniformValue = uniformValue;
+    });
     const shaderMaterial = new THREE.ShaderMaterial({
       uniforms: passThruUniforms,
-      vertexShader: passThroughVertexShader,
-      fragmentShader: computeFragmentShader,
+      vertexShader: this.vertexShaderCode,
+      fragmentShader: this.fragmentShaderCode,
     });
     shaderMaterial.defines.resolution =
       'vec2( ' + this.textureWidth.toFixed( 1 ) + ', ' + this.textureWidth.toFixed( 1 ) + " )";
@@ -60,7 +71,6 @@ class ComputeShaderRunner {
   }
 
   computeTextureFromArray(uniformInfo, dataArray){
-    console.log(arguments);
     const texFormat = uniformInfo.format ? uniformInfo.format : THREE.RGBAFormat;
     const tex = new THREE.DataTexture(
       dataArray,
@@ -71,10 +81,7 @@ class ComputeShaderRunner {
   }
 
   computeRun(verticesArray, returnValuesArray) {
-    const textureUniformInfo = [
-      {name: 'positionTexture', format: THREE.RGBAFormat}
-    ];
-    textureUniformInfo.forEach((uniformInfo) => {
+    this.textureUniformInfo.forEach((uniformInfo) => {
       this.computeTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
     });
     this.renderer.render( this.scene, this.camera, this.renderTarget );
