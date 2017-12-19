@@ -6,7 +6,7 @@ class ComputeShaderRunner {
   constructor(renderer, textureWidth) {
     this.renderer = renderer;
     this.textureWidth = textureWidth;
-    this.textureUniformInfo = [
+    this.uniformInfoList = [
       {name: 'positionTexture', format: THREE.RGBAFormat},
       {name: 'velocityTexture', format: THREE.RGBAFormat},
       {name: 'frameTimeSec', format: THREE.FloatType},
@@ -42,16 +42,17 @@ class ComputeShaderRunner {
       magFilter: THREE.NearestFilter,
       format: THREE.RGBAFormat,
       type: THREE.FloatType,
-      stencilBuffer: false
+      stencilBuffer: false,
+      depthBuffer: false
     };
     return new THREE.WebGLRenderTarget(
       this.textureWidth, this.textureWidth, options
     );
   }
 
-  makeComputeShaderMaterial(otherUniforms){
+  makeComputeShaderMaterial(){
     var passThruUniforms = {};
-    this.textureUniformInfo.forEach((uniformInfo) => {
+    this.uniformInfoList.forEach((uniformInfo) => {
       const uniformValue = { value: null };
       passThruUniforms[uniformInfo.name] = uniformValue;
       uniformInfo._uniformValue = uniformValue;
@@ -66,13 +67,13 @@ class ComputeShaderRunner {
     return [shaderMaterial, passThruUniforms];
   }
 
-  computeReturnBuffer() {
+  createComputeReturnBuffer() {
     const returnValuesArray =
       new Float32Array( this.textureWidth * this.textureWidth * 4 );
     return returnValuesArray;
   }
 
-  computeTextureFromArray(uniformInfo, dataArray){
+  dataTextureFromArray(uniformInfo, dataArray){
     const texFormat = uniformInfo.format ? uniformInfo.format : THREE.RGBAFormat;
     const tex = new THREE.DataTexture(
       dataArray,
@@ -83,9 +84,9 @@ class ComputeShaderRunner {
   }
 
   computeRun(verticesArray, returnValuesArray) {
-    this.textureUniformInfo.forEach((uniformInfo) => {
+    this.uniformInfoList.forEach((uniformInfo) => {
       if(uniformInfo.format == THREE.RGBAFormat){
-        this.computeTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
+        this.dataTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
       }
       else{
         uniformInfo._uniformValue.value = verticesArray[uniformInfo.name];
@@ -153,8 +154,8 @@ function main(rootEl) {
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
-  const shaderRunner = new ComputeShaderRunner(renderer, textureWidth);
-  var returnValuesArray = shaderRunner.computeReturnBuffer();
+  const positionRunner = new ComputeShaderRunner(renderer, textureWidth);
+  var returnValuesArray = positionRunner.createComputeReturnBuffer();
 
   var velocitiesArray = new Float32Array(geometryVertices.array.length);
   for(var i = 0; i < velocitiesArray.length; i += 4){
@@ -167,12 +168,11 @@ function main(rootEl) {
   function animate(frameTimeSec){
     const oldVertices = geometryVertices.array;
 
-    shaderRunner.computeRun({
+    positionRunner.computeRun({
       positionTexture: geometryVertices.array,
       velocityTexture: velocitiesArray,
       frameTimeSec: frameTimeSec,
     }, returnValuesArray);
-
 
     geometryVertices.setArray(returnValuesArray);
     geometryVertices.needsUpdate = true;
