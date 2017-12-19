@@ -1,18 +1,21 @@
 
 const THREE = require('three');
 const { cubeFrame, initRenderCanvas, computeTextureSupportCheck } = require('../shared/util');
+const fragmentShaderCode = require('./computeFragment.glsl');
 
+const computeVertexPassPositionCode = require('./computeVertexPassPosition.glsl');
 class ComputeShaderRunner {
-  constructor(renderer, textureWidth) {
+  constructor(renderer, textureWidth, uniformInfoList, fragmentShaderCode) {
     this.renderer = renderer;
     this.textureWidth = textureWidth;
-    this.uniformInfoList = [
-      {name: 'positionTexture', format: THREE.RGBAFormat},
-      {name: 'velocityTexture', format: THREE.RGBAFormat},
-      {name: 'frameTimeSec', format: THREE.FloatType},
-    ];
-    this.vertexShaderCode = require('./computeVertex.glsl');
-    this.fragmentShaderCode = require('./computeFragment.glsl');
+    this.uniformInfoList = uniformInfoList;
+    // [
+    //   {name: 'positionTexture', format: THREE.RGBAFormat},
+    //   {name: 'velocityTexture', format: THREE.RGBAFormat},
+    //   {name: 'frameTimeSec', format: THREE.FloatType},
+    // ];
+    this.vertexShaderCode = computeVertexPassPositionCode;
+    this.fragmentShaderCode = fragmentShaderCode;
     computeTextureSupportCheck(renderer);
     this.renderTarget = this.makeRenderTarget();
     [this.scene, this.camera] = this.makeSceneCamera();
@@ -154,7 +157,14 @@ function main(rootEl) {
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
-  const positionRunner = new ComputeShaderRunner(renderer, textureWidth);
+  const uniforms = [
+    {name: 'positionTexture', format: THREE.RGBAFormat},
+    {name: 'velocityTexture', format: THREE.RGBAFormat},
+    {name: 'frameTimeSec', format: THREE.FloatType},
+  ];
+
+  const positionRunner = new ComputeShaderRunner(
+    renderer, textureWidth, uniforms, fragmentShaderCode);
   var returnValuesArray = positionRunner.createComputeReturnBuffer();
 
   var velocitiesArray = new Float32Array(geometryVertices.array.length);
