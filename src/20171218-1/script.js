@@ -67,32 +67,50 @@ function main(rootEl) {
     {name: 'frameTimeSec', format: THREE.FloatType},
   ];
 
-  // const velocityRunner = new ComputeShaderRunner(
-  //   renderer, textureWidth, uniforms, velocityShaderCode);
+
+  var velocitiesArray = new Float32Array(geometryVertices.array.length);
+  const velocities = new THREE.BufferAttribute( velocitiesArray, 4 );
+
+  for(var i = 0; i < velocitiesArray.length; i += 4){
+    velocities.array[i] = 0.0;
+    velocities.array[i + 1] = -1.9;
+    velocities.array[i + 2] = 0.0;
+    velocities.array[i + 3] = 1.0;
+  }
+
+  const velocityRunner = new ComputeShaderRunner(
+    renderer, textureWidth, uniforms, velocityShaderCode);
+  var computedVelocities = velocityRunner.createComputeReturnBuffer();
+  var oldVelocities = velocitiesArray;
   const positionRunner = new ComputeShaderRunner(
     renderer, textureWidth, uniforms, positionShaderCode);
-
   var computedVertices = positionRunner.createComputeReturnBuffer();
   var oldVertices = geometryVertices.array;
 
-  var velocitiesArray = new Float32Array(geometryVertices.array.length);
-  for(var i = 0; i < velocitiesArray.length; i += 4){
-    velocitiesArray[i] = 0.0;
-    velocitiesArray[i + 1] = -0.05;
-    velocitiesArray[i + 2] = 0.0;
-    velocitiesArray[i + 3] = 1.0;
-  }
 
   function animate(frameTimeSec){
+    console.log(frameTimeSec);
+
+    velocityRunner.computeRun({
+      positionTexture: oldVertices,
+      velocityTexture: oldVelocities,
+      frameTimeSec: frameTimeSec,
+    }, computedVelocities);
+    /* Double buffer swap old and new */
+    [oldVelocities, computedVelocities] = [computedVelocities, oldVelocities];
+
     positionRunner.computeRun({
       positionTexture: oldVertices,
-      velocityTexture: velocitiesArray,
+      velocityTexture: computedVelocities,
       frameTimeSec: frameTimeSec,
     }, computedVertices);
     geometryVertices.setArray(computedVertices);
     geometryVertices.needsUpdate = true;
     /* Double buffer swap old and new */
     [oldVertices, computedVertices] = [computedVertices, oldVertices];
+
+
+
     renderer.render( scene, camera );
   }
 

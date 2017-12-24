@@ -55,15 +55,18 @@ class ComputeShaderRunner {
   makeComputeShaderMaterial(){
     var passThruUniforms = {};
     this.uniformInfoList.forEach((uniformInfo) => {
-      const uniformValue = { value: null };
+      const initValue = (uniformInfo.format == THREE.RGBAFormat) ? null : 0.0;
+      const uniformValue = { value: initValue };
       passThruUniforms[uniformInfo.name] = uniformValue;
       uniformInfo._uniformValue = uniformValue;
     });
+    console.log('passThruUniforms', passThruUniforms)
     const shaderMaterial = new THREE.ShaderMaterial({
       uniforms: passThruUniforms,
       vertexShader: this.vertexShaderCode,
       fragmentShader: this.fragmentShaderCode,
     });
+    this.passThruUniforms = passThruUniforms;
     shaderMaterial.defines.resolution =
       'vec2( ' + this.textureWidth.toFixed( 1 ) + ', ' + this.textureWidth.toFixed( 1 ) + " )";
     return [shaderMaterial, passThruUniforms];
@@ -85,15 +88,16 @@ class ComputeShaderRunner {
     uniformInfo._uniformValue.value = tex;
   }
 
-  computeRun(verticesArray, returnValuesArray) {
+  computeRun(uniformValues, returnValuesArray) {
     this.uniformInfoList.forEach((uniformInfo) => {
       if(uniformInfo.format == THREE.RGBAFormat){
-        this.dataTextureFromArray(uniformInfo, verticesArray[uniformInfo.name]);
+        this.dataTextureFromArray(uniformInfo, uniformValues[uniformInfo.name]);
       }
       else{
-        uniformInfo._uniformValue.value = verticesArray[uniformInfo.name];
+        uniformInfo._uniformValue.value = uniformValues[uniformInfo.name];
       }
     });
+    console.log('uniformInfo', this, this.uniformInfoList, this.passThruUniforms)
     this.renderer.render( this.scene, this.camera, this.renderTarget );
     this.renderer.readRenderTargetPixels( this.renderTarget,
       0, 0, this.textureWidth, this.textureWidth, returnValuesArray );
