@@ -22,14 +22,23 @@ function pointsBufferGeometry(textureWidth) {
   return [bufferGeometry, vertices];
 }
 
+function velocitiesBufferGeometry(textureWidth) {
+  const pointCount = textureWidth * textureWidth;
+  const bufferGeometry = new THREE.BufferGeometry();
+  const vertexFloatArray = new Float32Array( pointCount * 4 );
+	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
+  for(var i = 0; i < pointCount; i++){
+    vertices.array[i * 4] = 0.0;
+    vertices.array[i * 4 + 1] = 0.0;
+    vertices.array[i * 4 + 2] = 0.0;
+    vertices.array[i * 4 + 3] = 1.0;
+  }
+  bufferGeometry.addAttribute('position', vertices);
+  return [bufferGeometry, vertices];
+}
+
 function main(rootEl) {
   const textureWidth = 64;
-
-  const [w, h, renderer] = initRenderCanvas(rootEl);
-  const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
-	camera.position.z = 3.0;
-	const scene = new THREE.Scene();
-	var [bufferGeometry, geometryVertices] = pointsBufferGeometry(textureWidth);
   var material = new THREE.PointsMaterial( {
     size: 0.06,
     color: 0x5555AA,
@@ -43,8 +52,17 @@ function main(rootEl) {
     transparent: true,
   }  );
 
-	const points = new THREE.Points( bufferGeometry, material );
-  bufferGeometry.dynamic = true;
+  const [w, h, renderer] = initRenderCanvas(rootEl);
+  const camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 5.0 );
+	camera.position.z = 3.0;
+	const scene = new THREE.Scene();
+
+  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
+  velocityBufferGeometry.dynamic = true;
+
+	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
+	const points = new THREE.Points( positionBufferGeometry, material );
+  positionBufferGeometry.dynamic = true;
 
   const geometry2 = new THREE.SphereGeometry( 0.5, 13, 9 );
   const points2 = new THREE.Points( geometry2, material2 );
@@ -67,54 +85,66 @@ function main(rootEl) {
     {name: 'frameTimeSec', format: THREE.FloatType},
   ];
 
-
-  var velocitiesArray = new Float32Array(geometryVertices.array.length);
-  const velocities = new THREE.BufferAttribute( velocitiesArray, 4 );
-
-  for(var i = 0; i < velocitiesArray.length; i += 4){
-    velocities.array[i] = 0.0;
-    velocities.array[i + 1] = -1.9;
-    velocities.array[i + 2] = 0.0;
-    velocities.array[i + 3] = 1.0;
-  }
-
   const velocityRunner = new ComputeShaderRunner(
     renderer, textureWidth, uniforms, velocityShaderCode);
   var computedVelocities = velocityRunner.createComputeReturnBuffer();
-  var oldVelocities = velocitiesArray;
+  var oldVelocities = velocityGeometryVertices.array;
+
   const positionRunner = new ComputeShaderRunner(
     renderer, textureWidth, uniforms, positionShaderCode);
   var computedVertices = positionRunner.createComputeReturnBuffer();
-  var oldVertices = geometryVertices.array;
+  var oldVertices = positionGeometryVertices.array;
 
+
+  function first(floatArray){
+    return `[${floatArray[0]}, ${floatArray[1]}, ${floatArray[2]}, ${floatArray[3]}]`;
+  }
+  // function swap(a, b){
+  //   return [b, a];
+  // }
 
   function animate(frameTimeSec){
     console.log(frameTimeSec);
 
+    console.log('velocityRunner1', first(oldVelocities), first(computedVelocities));
     velocityRunner.computeRun({
       positionTexture: oldVertices,
       velocityTexture: oldVelocities,
       frameTimeSec: frameTimeSec,
     }, computedVelocities);
+    velocityGeometryVertices.setArray(computedVelocities);
+    velocityGeometryVertices.needsUpdate = true;
     /* Double buffer swap old and new */
-    [oldVelocities, computedVelocities] = [computedVelocities, oldVelocities];
+    console.log('velocityRunner2', first(oldVelocities), first(computedVelocities));
 
     positionRunner.computeRun({
       positionTexture: oldVertices,
       velocityTexture: computedVelocities,
       frameTimeSec: frameTimeSec,
     }, computedVertices);
-    geometryVertices.setArray(computedVertices);
-    geometryVertices.needsUpdate = true;
+    positionGeometryVertices.setArray(computedVertices);
+    positionGeometryVertices.needsUpdate = true;
     /* Double buffer swap old and new */
-    [oldVertices, computedVertices] = [computedVertices, oldVertices];
+    console.warn('positionRunner', first(oldVertices), first(computedVertices));
+
+    var s;
+    s = oldVelocities;
+    oldVelocities = computedVelocities;
+    computedVelocities = s;
 
 
+    s = oldVertices;
+    oldVertices = computedVertices;
+    computedVertices = s;
 
     renderer.render( scene, camera );
   }
+  animate(0.2);
+  animate(0.4);
+  animate(0.6);
 
-  return animate;
+  // return animate;
+  return function(){};
 }
 
 module.exports = main;
