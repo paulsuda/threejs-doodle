@@ -1,14 +1,8 @@
-
 const THREE = require('three');
 const { cubeFrame, initRenderCanvas } = require('../shared/util');
 const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
 const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
-
-
-function first(floatArray){
-  return `[${floatArray[0]}, ${floatArray[1]}, ${floatArray[2]}, ${floatArray[3]}]`;
-}
 
 function pointsBufferGeometry(textureWidth) {
   const scaleFactor = 3.2;
@@ -72,7 +66,6 @@ function main(rootEl) {
   points2.rotation.y += 0.1;
 
   var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
-  const pointsx = new THREE.Points( velocityBufferGeometry, material );
 
 	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
 	const points = new THREE.Points( positionBufferGeometry, material );
@@ -82,7 +75,6 @@ function main(rootEl) {
   const group = new THREE.Group();
   group.add(points);
   group.add(points2);
-  group.add(pointsx);
   group.add(cubeFrame(1.0));
 
   scene.add( group );
@@ -107,6 +99,7 @@ function main(rootEl) {
   var oldVertices = positionGeometryVertices.array;
 
   function animate(frameTimeSec){
+    /* Calculate updated velocity vectors. */
     velocityRunner.computeRun({
       positionTexture: oldVertices,
       velocityTexture: oldVelocities,
@@ -114,9 +107,8 @@ function main(rootEl) {
     }, computedVelocities);
     velocityGeometryVertices.setArray(computedVelocities);
     velocityGeometryVertices.needsUpdate = true;
-    /* Double buffer swap old and new */
-    console.error('velocityRunner', first(oldVelocities), first(computedVelocities));
 
+    /* Move positions by their respective velocities. */
     positionRunner.computeRun({
       positionTexture: oldVertices,
       velocityTexture: computedVelocities,
@@ -124,9 +116,8 @@ function main(rootEl) {
     }, computedVertices);
     positionGeometryVertices.setArray(computedVertices);
     positionGeometryVertices.needsUpdate = true;
-    /* Double buffer swap old and new */
-    console.warn('positionRunner', first(oldVertices), first(computedVertices));
 
+    /* Double buffer swap old and new */
     var s;
     s = oldVelocities;
     oldVelocities = computedVelocities;
@@ -138,10 +129,6 @@ function main(rootEl) {
 
     renderer.render( scene, camera );
   }
-  // animate(0.2);
-  // animate(0.4);
-  // animate(0.6);
-  // return function(){};
 
   return animate;
 }

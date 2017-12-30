@@ -69,7 +69,6 @@ class ComputeShaderRunner {
       passThruUniforms[uniformInfo.name] = uniformValue;
       uniformInfo._uniformValue = uniformValue;
     });
-    console.log('passThruUniforms', passThruUniforms)
     const shaderMaterial = new THREE.ShaderMaterial({
       uniforms: passThruUniforms,
       vertexShader: this.vertexShaderCode,
@@ -106,7 +105,6 @@ class ComputeShaderRunner {
         uniformInfo._uniformValue.value = uniformValues[uniformInfo.name];
       }
     });
-    console.log('uniformInfo', this, this.uniformInfoList, this.passThruUniforms)
     this.renderer.render( this.scene, this.camera, this.renderTarget );
     this.renderer.readRenderTargetPixels( this.renderTarget,
       0, 0, this.textureWidth, this.textureWidth, returnValuesArray );
