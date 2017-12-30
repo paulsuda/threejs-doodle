@@ -5,12 +5,19 @@ const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
 const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
 
+
+function first(floatArray){
+  return `[${floatArray[0]}, ${floatArray[1]}, ${floatArray[2]}, ${floatArray[3]}]`;
+}
+
 function pointsBufferGeometry(textureWidth) {
   const scaleFactor = 3.2;
   const pointCount = textureWidth * textureWidth;
   const bufferGeometry = new THREE.BufferGeometry();
   const vertexFloatArray = new Float32Array( pointCount * 4 );
 	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
+  vertices.dynamic = true;
+  bufferGeometry.dynamic = true;
   for(var i = 0; i < pointCount; i++){
     vertices.array[i * 4] =  Math.random() - 0.5;
     vertices.array[i * 4 + 1] = Math.random() - 0.5;
@@ -27,6 +34,8 @@ function velocitiesBufferGeometry(textureWidth) {
   const bufferGeometry = new THREE.BufferGeometry();
   const vertexFloatArray = new Float32Array( pointCount * 4 );
 	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
+  vertices.dynamic = true;
+  bufferGeometry.dynamic = true;
   for(var i = 0; i < pointCount; i++){
     vertices.array[i * 4] = 0.0;
     vertices.array[i * 4 + 1] = 0.0;
@@ -57,21 +66,23 @@ function main(rootEl) {
 	camera.position.z = 3.0;
 	const scene = new THREE.Scene();
 
-  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
-  velocityBufferGeometry.dynamic = true;
-
-	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
-	const points = new THREE.Points( positionBufferGeometry, material );
-  positionBufferGeometry.dynamic = true;
-
   const geometry2 = new THREE.SphereGeometry( 0.5, 13, 9 );
   const points2 = new THREE.Points( geometry2, material2 );
   points2.rotation.x += 0.124;
   points2.rotation.y += 0.1;
 
+  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
+  const pointsx = new THREE.Points( velocityBufferGeometry, material );
+
+	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
+	const points = new THREE.Points( positionBufferGeometry, material );
+  positionBufferGeometry.dynamic = true;
+  velocityGeometryVertices.dynamic = true;
+
   const group = new THREE.Group();
   group.add(points);
   group.add(points2);
+  group.add(pointsx);
   group.add(cubeFrame(1.0));
 
   scene.add( group );
@@ -95,18 +106,11 @@ function main(rootEl) {
   var computedVertices = positionRunner.createComputeReturnBuffer();
   var oldVertices = positionGeometryVertices.array;
 
-
-  function first(floatArray){
-    return `[${floatArray[0]}, ${floatArray[1]}, ${floatArray[2]}, ${floatArray[3]}]`;
-  }
-  // function swap(a, b){
-  //   return [b, a];
-  // }
-
   function animate(frameTimeSec){
     console.log(frameTimeSec);
 
     console.log('velocityRunner1', first(oldVelocities), first(computedVelocities));
+
     velocityRunner.computeRun({
       positionTexture: oldVertices,
       velocityTexture: oldVelocities,
@@ -115,7 +119,7 @@ function main(rootEl) {
     velocityGeometryVertices.setArray(computedVelocities);
     velocityGeometryVertices.needsUpdate = true;
     /* Double buffer swap old and new */
-    console.log('velocityRunner2', first(oldVelocities), first(computedVelocities));
+    console.error('velocityRunner2', first(oldVelocities), first(computedVelocities));
 
     positionRunner.computeRun({
       positionTexture: oldVertices,
@@ -132,7 +136,6 @@ function main(rootEl) {
     oldVelocities = computedVelocities;
     computedVelocities = s;
 
-
     s = oldVertices;
     oldVertices = computedVertices;
     computedVertices = s;
@@ -142,9 +145,9 @@ function main(rootEl) {
   animate(0.2);
   animate(0.4);
   animate(0.6);
+  return function(){};
 
   // return animate;
-  return function(){};
 }
 
 module.exports = main;

@@ -55,7 +55,7 @@ class ComputeShaderRunner {
   makeComputeShaderMaterial(){
     var passThruUniforms = {};
     this.uniformInfoList.forEach((uniformInfo) => {
-      const initValue = (uniformInfo.format == THREE.RGBAFormat) ? null : 0.01;
+      const initValue = (uniformInfo.format == THREE.RGBAFormat) ? null : 0.03333;
       const uniformValue = { value: initValue };
       passThruUniforms[uniformInfo.name] = uniformValue;
       uniformInfo._uniformValue = uniformValue;
