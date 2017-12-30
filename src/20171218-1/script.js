@@ -107,10 +107,6 @@ function main(rootEl) {
   var oldVertices = positionGeometryVertices.array;
 
   function animate(frameTimeSec){
-    console.log(frameTimeSec);
-
-    console.log('velocityRunner1', first(oldVelocities), first(computedVelocities));
-
     velocityRunner.computeRun({
       positionTexture: oldVertices,
       velocityTexture: oldVelocities,
@@ -119,7 +115,7 @@ function main(rootEl) {
     velocityGeometryVertices.setArray(computedVelocities);
     velocityGeometryVertices.needsUpdate = true;
     /* Double buffer swap old and new */
-    console.error('velocityRunner2', first(oldVelocities), first(computedVelocities));
+    console.error('velocityRunner', first(oldVelocities), first(computedVelocities));
 
     positionRunner.computeRun({
       positionTexture: oldVertices,
@@ -142,12 +138,12 @@ function main(rootEl) {
 
     renderer.render( scene, camera );
   }
-  animate(0.2);
-  animate(0.4);
-  animate(0.6);
-  return function(){};
+  // animate(0.2);
+  // animate(0.4);
+  // animate(0.6);
+  // return function(){};
 
-  // return animate;
+  return animate;
 }
 
 module.exports = main;

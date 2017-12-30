@@ -7,7 +7,16 @@ class ComputeShaderRunner {
   constructor(renderer, textureWidth, uniformInfoList, fragmentShaderCode) {
     this.renderer = renderer;
     this.textureWidth = textureWidth;
-    this.uniformInfoList = uniformInfoList;
+    this.uniformInfoList = [];
+    /* Deep clone uniformInfoList so we don't wind up sharing with other
+     * runners. */
+    uniformInfoList.forEach((uniformInfo) => {
+      this.uniformInfoList.push({
+        name: uniformInfo.name,
+        format: uniformInfo.format,
+        _uniformValue: null
+      });
+    });
     // [
     //   {name: 'positionTexture', format: THREE.RGBAFormat},
     //   {name: 'velocityTexture', format: THREE.RGBAFormat},

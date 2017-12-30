@@ -7,8 +7,7 @@ void main() {
    vec2 uv = gl_FragCoord.xy / resolution.xy;
    vec4 p = texture2D( positionTexture, uv );
    vec4 v = texture2D( velocityTexture, uv );
-   p.y += v.y  * frameTimeSec;
-   p.w = frameTimeSec;
+   p.y += v.y * frameTimeSec;
    /* Until the ground. */
    if(p.y < -1.2){
      p.y = -1.2;
