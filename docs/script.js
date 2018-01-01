@@ -48643,7 +48643,7 @@ function main(rootEl, [w,h]) {
   scene.background = new THREE.Color( 0xFFF233  );
   var loader = new THREE.FontLoader();
   var font = null;
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
+  loader.load( './fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
     font = loadedFont;
   });
 
@@ -48772,7 +48772,7 @@ function main(rootEl, [w,h]) {
     scene.add( lineText );
     renderer.render( scene, camera );
   }
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
+  loader.load( './fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
     font = loadedFont;
   });
   return render;
@@ -48832,7 +48832,7 @@ function main(rootEl, [w,h]) {
 
   scene.background = new THREE.Color( 0xCCF2FF );
   var loader = new THREE.FontLoader();
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
+  loader.load( './fonts/helvetiker_regular.typeface.json', function ( font ) {
     var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
     var text = new THREE.Mesh( textShape, matLite );
     text.position.z = 5;

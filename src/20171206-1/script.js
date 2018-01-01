@@ -45,7 +45,7 @@ function main(rootEl, [w,h]) {
 
   scene.background = new THREE.Color( 0xCCF2FF );
   var loader = new THREE.FontLoader();
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( font ) {
+  loader.load( './fonts/helvetiker_regular.typeface.json', function ( font ) {
     var [shapes, textShape, xMid] = TextHelper.textShape(font, message, 120);
     var text = new THREE.Mesh( textShape, matLite );
     text.position.z = 5;

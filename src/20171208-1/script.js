@@ -47,7 +47,7 @@ function main(rootEl, [w,h]) {
   scene.background = new THREE.Color( 0xFFF233  );
   var loader = new THREE.FontLoader();
   var font = null;
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
+  loader.load( './fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
     font = loadedFont;
   });
 

@@ -74,7 +74,7 @@ function main(rootEl, [w,h]) {
     scene.add( lineText );
     renderer.render( scene, camera );
   }
-  loader.load( '/fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
+  loader.load( './fonts/helvetiker_regular.typeface.json', function ( loadedFont ) {
     font = loadedFont;
   });
   return render;
