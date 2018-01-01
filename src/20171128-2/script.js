@@ -7,7 +7,7 @@ function main(rootEl) {
   const camera = new THREE.PerspectiveCamera( 70, w / h, 1, 1000 );
 	camera.position.z = 400;
 	const scene = new THREE.Scene();
-  var texture = new THREE.TextureLoader().load( '/img/pvberlin.gif' );
+  var texture = new THREE.TextureLoader().load( './img/pvberlin.gif' );
 	var geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
   var material = new THREE.MeshBasicMaterial( {
     map: texture
