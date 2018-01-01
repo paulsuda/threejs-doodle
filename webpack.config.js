@@ -12,7 +12,7 @@ const config = {
   entry: path.join(__dirname, 'index.js'),
   plugins: [HtmlWebpackPluginConfig],
   output: {
-    filename: 'bundle.js',
+    filename: 'script.js',
     path: path.join(__dirname, 'docs'),
   },
   devServer: {
