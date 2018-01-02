@@ -46468,7 +46468,7 @@ module.exports = g;
 /* eslint-disable no-unused-vars */
 const assert = __webpack_require__(7);
 const script = __webpack_require__(12);
-const css = __webpack_require__(37);
+const css = __webpack_require__(40);
 const rootId = 'root';
 
 const rootEl = document.getElementById(rootId); // eslint-disable-line no-undef
@@ -47808,20 +47808,21 @@ const moduleList = [
   __webpack_require__(13),
   __webpack_require__(17),
   __webpack_require__(20),
-  __webpack_require__(22),
-  __webpack_require__(24),
+  __webpack_require__(23),
   __webpack_require__(25),
-  __webpack_require__(26), // 10
   __webpack_require__(27),
   __webpack_require__(28),
-  __webpack_require__(29),
+  __webpack_require__(29), // 10
   __webpack_require__(30),
-  __webpack_require__(31), // 5
+  __webpack_require__(31),
   __webpack_require__(32),
   __webpack_require__(33),
-  __webpack_require__(34),
-  __webpack_require__(35), // 1
+  __webpack_require__(34), // 5
+  __webpack_require__(35),
   __webpack_require__(36),
+  __webpack_require__(37),
+  __webpack_require__(38), // 1
+  __webpack_require__(39),
 ];
 
 function keyListen(callbackFn){
@@ -47984,7 +47985,7 @@ function velocitiesBufferGeometry(textureWidth) {
 }
 
 function main(rootEl) {
-  const textureWidth = 256;
+  const textureWidth = 128;
   var material = new THREE.PointsMaterial( {
     size: 0.06,
     color: 0xccccee,
@@ -48085,13 +48086,13 @@ module.exports = main;
 /* 14 */
 /***/ (function(module, exports) {
 
-module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   p = p + (v * frameTimeSec);\n   /* Until the ground. */\n   if(p.y < -1.2){\n     p.y = -1.2;\n   }\n   if(p.x < -1.2){\n     p.x = -1.2;\n   }\n   if(p.x > 1.2){\n     p.x = 1.2;\n   }\n   if(p.z < -1.2){\n     p.z = -1.2;\n   }\n   if(p.z > 1.2){\n     p.z = 1.2;\n   }\n   gl_FragColor = p;\n}\n"
+module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   vec4 nextP = p + (v * frameTimeSec);\n   float boxSize = 1.0;\n   if(nextP.y < -1.2){\n     nextP.y = -1.19;\n   }\n   else if(nextP.x < -boxSize){\n     nextP.x = -boxSize + 0.01;\n   }\n   else if (nextP.x > boxSize){\n     nextP.x = boxSize - 0.01;\n   }\n   else if(nextP.z < -boxSize){\n     nextP.z = boxSize + 0.01;\n   }\n   else if(nextP.z > boxSize){\n     nextP.z = boxSize - 0.01;\n   }\n   gl_FragColor = nextP;\n}\n"
 
 /***/ }),
 /* 15 */
 /***/ (function(module, exports) {
 
-module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n\n   /* Gravity */\n   // v.y += -4.9 * frameTimeSec;\n\n   /* pull to middle at bottom push at top */\n   v.xz += (normalize(p.xz * p.y) * 3.0 * frameTimeSec);\n\n   /* Anti gravity in center. */\n   v.y += cos(length(p.xz) * 2.0) * frameTimeSec;\n\n   /* Decay */\n   v.xyz *= 1.0 - (0.6 * frameTimeSec);\n\n   gl_FragColor = v;\n}\n"
+module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   float bounceFactor = 0.2;\n   float floorY = -1.2;\n   float boxSize = 1.0;\n   vec4 nextP = p + (v * frameTimeSec);\n\n   /* Gravity */\n   v.y += -4.0 * frameTimeSec;\n\n   if(nextP.y < -1.2){\n     v.y = -v.y * bounceFactor;\n   }\n   if(nextP.x < -boxSize || nextP.x > boxSize){\n     v.x = -v.x * bounceFactor;\n   }\n   if(nextP.z < -boxSize || nextP.z > boxSize){\n     v.z = -v.z * bounceFactor;\n   }\n\n   /* pull to middle at bottom push at top, a little more at bottom */\n   float pullFactor = min(p.y * 14.0, p.y * 6.0);\n   v.xz += (normalize(p.xz) * pullFactor * frameTimeSec);\n\n   /* Anti gravity in center. */\n   v.y += max(0.0, (0.2 - length(p.xz)) * 42.0 * frameTimeSec);\n\n   /* Decay */\n   v.xyz *= 1.0 - (0.6 * frameTimeSec);\n\n\n   gl_FragColor = v;\n}\n"
 
 /***/ }),
 /* 16 */
@@ -48107,6 +48108,160 @@ const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
 const positionShaderCode = __webpack_require__(18);
 const velocityShaderCode = __webpack_require__(19);
+const ComputeShaderRunner = __webpack_require__(2);
+
+function pointsBufferGeometry(textureWidth) {
+  const pointCount = textureWidth * textureWidth;
+  const bufferGeometry = new THREE.BufferGeometry();
+  const vertexFloatArray = new Float32Array( pointCount * 4 );
+	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
+  vertices.dynamic = true;
+  bufferGeometry.dynamic = true;
+  for(var i = 0; i < pointCount; i++){
+    vertices.array[i * 4] =  Math.random() - 0.5;
+    vertices.array[i * 4 + 1] = Math.random() - 0.5;
+    vertices.array[i * 4 + 2] = Math.random() - 0.5;
+    vertices.array[i * 4 + 3] = 1.0;
+  }
+  bufferGeometry.addAttribute('position', vertices);
+  return [bufferGeometry, vertices];
+}
+
+function velocitiesBufferGeometry(textureWidth) {
+  const pointCount = textureWidth * textureWidth;
+  const bufferGeometry = new THREE.BufferGeometry();
+  const vertexFloatArray = new Float32Array( pointCount * 4 );
+	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
+  vertices.dynamic = true;
+  bufferGeometry.dynamic = true;
+  for(var i = 0; i < pointCount; i++){
+    vertices.array[i * 4] = 0.0;
+    vertices.array[i * 4 + 1] = 0.0;
+    vertices.array[i * 4 + 2] = 0.0;
+    vertices.array[i * 4 + 3] = 1.0;
+  }
+  bufferGeometry.addAttribute('position', vertices);
+  return [bufferGeometry, vertices];
+}
+
+function main(rootEl) {
+  const textureWidth = 256;
+  var material = new THREE.PointsMaterial( {
+    size: 0.06,
+    color: 0xccccee,
+    opacity: 0.5,
+    transparent: true,
+  }  );
+  var material2 = new THREE.PointsMaterial( {
+    size: 0.06,
+    color: 0xCCAA33,
+    opacity: 0.75,
+    transparent: true,
+  }  );
+
+  const [w, h, renderer] = initRenderCanvas(rootEl);
+  const camera = new THREE.PerspectiveCamera( 45, w / h, 1.0, 5.0 );
+	camera.position.z = 3.0;
+  camera.position.y = -0.3;
+	const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xF8F8F8);
+
+  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
+  velocityGeometryVertices.dynamic = true;
+
+	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
+	const points = new THREE.Points( positionBufferGeometry, material );
+  positionBufferGeometry.dynamic = true;
+
+  const group = new THREE.Group();
+  group.add(points);
+
+  // const geometry2 = new THREE.SphereGeometry( 0.5, 13, 9 );
+  // const points2 = new THREE.Points( geometry2, material2 );
+  // points2.rotation.x += 0.124;
+  // points2.rotation.y += 0.1;
+  // group.add(points2);
+  // group.add(cubeFrame(1.0));
+
+  scene.add( group );
+
+  group.rotation.x += -0.1;
+  group.rotation.y += 0.1;
+
+  const uniforms = [
+    {name: 'positionTexture', format: THREE.RGBAFormat},
+    {name: 'velocityTexture', format: THREE.RGBAFormat},
+    {name: 'frameTimeSec', format: THREE.FloatType},
+  ];
+
+  const velocityRunner = new ComputeShaderRunner(
+    renderer, textureWidth, uniforms, velocityShaderCode);
+  var computedVelocities = velocityRunner.createComputeReturnBuffer();
+  var oldVelocities = velocityGeometryVertices.array;
+
+  const positionRunner = new ComputeShaderRunner(
+    renderer, textureWidth, uniforms, positionShaderCode);
+  var computedVertices = positionRunner.createComputeReturnBuffer();
+  var oldVertices = positionGeometryVertices.array;
+
+  function animate(frameTimeSec){
+    /* Calculate updated velocity vectors. */
+    velocityRunner.computeRun({
+      positionTexture: oldVertices,
+      velocityTexture: oldVelocities,
+      frameTimeSec: frameTimeSec,
+    }, computedVelocities);
+    velocityGeometryVertices.setArray(computedVelocities);
+    velocityGeometryVertices.needsUpdate = true;
+
+    /* Move positions by their respective velocities. */
+    positionRunner.computeRun({
+      positionTexture: oldVertices,
+      velocityTexture: computedVelocities,
+      frameTimeSec: frameTimeSec,
+    }, computedVertices);
+    positionGeometryVertices.setArray(computedVertices);
+    positionGeometryVertices.needsUpdate = true;
+
+    /* Double buffer swap old and new */
+    var s;
+    s = oldVelocities;
+    oldVelocities = computedVelocities;
+    computedVelocities = s;
+
+    s = oldVertices;
+    oldVertices = computedVertices;
+    computedVertices = s;
+
+    renderer.render( scene, camera );
+  }
+
+  return animate;
+}
+
+module.exports = main;
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   p = p + (v * frameTimeSec);\n   /* Until the ground. */\n   if(p.y < -1.2){\n     p.y = -1.2;\n   }\n   if(p.x < -1.2){\n     p.x = -1.2;\n   }\n   if(p.x > 1.2){\n     p.x = 1.2;\n   }\n   if(p.z < -1.2){\n     p.z = -1.2;\n   }\n   if(p.z > 1.2){\n     p.z = 1.2;\n   }\n   gl_FragColor = p;\n}\n"
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports) {
+
+module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n\n   /* Gravity */\n   // v.y += -4.9 * frameTimeSec;\n\n   /* pull to middle at bottom push at top */\n   v.xz += (normalize(p.xz * p.y) * 3.0 * frameTimeSec);\n\n   /* Anti gravity in center. */\n   v.y += cos(length(p.xz) * 2.0) * frameTimeSec;\n\n   /* Decay */\n   v.xyz *= 1.0 - (0.6 * frameTimeSec);\n\n   gl_FragColor = v;\n}\n"
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const THREE = __webpack_require__(0);
+const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
+const positionShaderCode = __webpack_require__(21);
+const velocityShaderCode = __webpack_require__(22);
 const ComputeShaderRunner = __webpack_require__(2);
 
 function pointsBufferGeometry(textureWidth) {
@@ -48242,25 +48397,25 @@ module.exports = main;
 
 
 /***/ }),
-/* 18 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   p.y += v.y * frameTimeSec;\n   /* Until the ground. */\n   if(p.y < -1.2){\n     p.y = -1.2;\n   }\n   gl_FragColor = p;\n}\n"
 
 /***/ }),
-/* 19 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   v.y += -0.8 * frameTimeSec;\n   gl_FragColor = v;\n}\n"
 
 /***/ }),
-/* 20 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
 const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
-const fragmentShaderCode = __webpack_require__(21);
+const fragmentShaderCode = __webpack_require__(24);
 
 const ComputeShaderRunner = __webpack_require__(2);
 
@@ -48360,13 +48515,13 @@ module.exports = main;
 
 
 /***/ }),
-/* 21 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 t = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   t += v * frameTimeSec;\n   /* Until the ground. */\n   if(t.y < -1.2){\n     t.y = -1.2;\n   }\n   gl_FragColor = t;\n}\n"
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -48377,7 +48532,7 @@ function makeComputeShaderMaterial(textureWidth){
   var passThruUniforms = {
     texture: { value: null }
   };
-  const computeFragmentShader = __webpack_require__(23);
+  const computeFragmentShader = __webpack_require__(26);
   const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
   const shaderMaterial = new THREE.ShaderMaterial({
     uniforms: passThruUniforms,
@@ -48503,13 +48658,13 @@ module.exports = main;
 
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D texture;\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 t = texture2D( texture, uv );\n   /* Fall down. */\n   t.y -= 0.02;\n   /* Until the ground. */\n   if(t.y < -1.2){\n     t.y = -1.2;\n   }\n   gl_FragColor = t;\n}\n"
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -48591,7 +48746,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -48693,7 +48848,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -48782,7 +48937,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 27 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -48870,7 +49025,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 28 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -48975,7 +49130,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49029,7 +49184,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 30 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49112,7 +49267,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 31 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49177,7 +49332,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49229,7 +49384,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49282,7 +49437,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 34 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49330,7 +49485,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 35 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49379,7 +49534,7 @@ module.exports = main;
 
 
 /***/ }),
-/* 36 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -49428,13 +49583,13 @@ module.exports = main;
 
 
 /***/ }),
-/* 37 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(38);
+var content = __webpack_require__(41);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -49442,7 +49597,7 @@ var transform;
 var options = {"hmr":true}
 options.transform = transform
 // add the styles to the DOM
-var update = __webpack_require__(40)(content, options);
+var update = __webpack_require__(43)(content, options);
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -49459,10 +49614,10 @@ if(false) {
 }
 
 /***/ }),
-/* 38 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(39)(undefined);
+exports = module.exports = __webpack_require__(42)(undefined);
 // imports
 
 
@@ -49473,7 +49628,7 @@ exports.push([module.i, "html, body {\n  height: 100%;\n  width: 100%;\n  paddin
 
 
 /***/ }),
-/* 39 */
+/* 42 */
 /***/ (function(module, exports) {
 
 /*
@@ -49555,7 +49710,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 40 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -49611,7 +49766,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(41);
+var	fixUrls = __webpack_require__(44);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -49927,7 +50082,7 @@ function updateLink (link, options, obj) {
 
 
 /***/ }),
-/* 41 */
+/* 44 */
 /***/ (function(module, exports) {
 
 
