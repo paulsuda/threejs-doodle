@@ -44,4 +44,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Lumpy Sphere
+Little spines are from FaceNormalsHelper. Lighting from 3 sources.
+`;
+
 module.exports = main;

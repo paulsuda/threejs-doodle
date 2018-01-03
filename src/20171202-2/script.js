@@ -45,4 +45,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Dot Space
+SphereGeometry x 2. Color material. Just practice.
+`;
+
 module.exports = main;

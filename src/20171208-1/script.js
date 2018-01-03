@@ -67,14 +67,11 @@ function main(rootEl, [w,h]) {
   scene.add( lineText );
 
   document.addEventListener('keydown', (event) => {
-    if(event.key == 'f'){
+    if(event.key == 'u'){
       messageText += 'u';
     }
-    else if(event.key == 'g'){
+    else if(event.key == 'c'){
       messageText += 'z';
-    }
-    else if(event.key == 'h'){
-      console.log('h', controls, camera);
     }
     return false;
   });
@@ -92,5 +89,13 @@ function main(rootEl, [w,h]) {
 
   return render;
 }
+
+main.src = __filename;
+
+main.description = `
+## Fu...
+Type, one light, a surprise.
+Press and hold *u* then *c* to type.
+`;
 
 module.exports = main;

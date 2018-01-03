@@ -10,7 +10,13 @@ const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
 
 const config = {
   entry: path.join(__dirname, 'index.js'),
-  plugins: [HtmlWebpackPluginConfig],
+  plugins: [
+    HtmlWebpackPluginConfig
+  ],
+  context: __dirname,
+  node: {
+    __filename: true
+  },
   output: {
     filename: 'script.js',
     path: path.join(__dirname, 'docs'),

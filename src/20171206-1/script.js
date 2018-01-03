@@ -76,7 +76,12 @@ function main(rootEl, [w,h]) {
   return render;
 }
 
+main.src = __filename;
 
-
+main.description = `
+## Date
+Type, gold material, single light source. Rendering text is complicated,
+shapes, holes. TextHelper.
+`;
 
 module.exports = main;

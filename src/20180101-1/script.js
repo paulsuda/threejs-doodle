@@ -133,4 +133,14 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Dot Physics 
+Compute shaders and dots. Bounding box
+rebounds collisions and changes velocities now.
+Not as cool as the less real
+one before this.
+`;
+
 module.exports = main;

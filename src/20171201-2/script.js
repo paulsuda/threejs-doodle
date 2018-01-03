@@ -56,4 +56,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## More Gold Sphere
+Clipping, depth, drawing multiple objects, lines.
+`;
+
 module.exports = main;

@@ -97,4 +97,12 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Slow-mo Pink Snow
+Dots moving down. Reference object.
+First use of ComputeShaderRunner.
+`;
+
 module.exports = main;

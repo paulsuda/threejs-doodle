@@ -73,4 +73,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Geometry Practice
+SphereGeometry, with generated geometry points.
+`;
+
 module.exports = main;

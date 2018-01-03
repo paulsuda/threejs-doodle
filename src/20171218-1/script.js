@@ -133,4 +133,12 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Purple Gravity Snow
+Dots snow, gravity, and reference object.
+ComputeShaderRunner, compute shaders. Two, one for velocities and one for positions.
+`;
+
 module.exports = main;

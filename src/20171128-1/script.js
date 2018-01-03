@@ -40,4 +40,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Red Cube
+Hello world! Lighting from 3 sources.
+`;
+
 module.exports = main;

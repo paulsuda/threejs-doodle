@@ -128,4 +128,13 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Green Snow
+Dots moving downwards, positions clamped to a floor. Reference object.
+Compute shader moves points,
+Super basic THREE.ShaderMaterial.
+`;
+
 module.exports = main;

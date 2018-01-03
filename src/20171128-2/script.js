@@ -39,4 +39,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Textured Cube
+In Berlin! Learning texturing.
+`;
+
 module.exports = main;

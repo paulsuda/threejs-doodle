@@ -74,4 +74,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Foreboding Dark Sphere
+Three differently colored light sources. Drawing the normals myself this time!
+`;
+
 module.exports = main;

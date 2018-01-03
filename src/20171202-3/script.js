@@ -96,4 +96,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Gravity Bounce
+Dots, gravitational acceleration, dampened bounce.
+`;
+
 module.exports = main;

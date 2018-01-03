@@ -1,7 +1,6 @@
 
 const THREE = require('three');
 
-
 function cubeFrame(size){
   const geometry = new THREE.BoxBufferGeometry( size, size, size );
   const material = new THREE.MeshBasicMaterial({
@@ -47,12 +46,10 @@ function initRenderCanvas(rootEl, renderer, windowSizeCallback){
   return [w, h, renderer];
 }
 
-
-function htmlMessage(rootEl, messageText){
+function htmlMessage(rootEl, messageHtml){
   const p = document.createElement('p');
-  const t = document.createTextNode(messageText);
+  p.innerHTML = messageHtml;
   p.className = 'float';
-  p.appendChild(t);
   rootEl.appendChild(p);
   return p;
 }

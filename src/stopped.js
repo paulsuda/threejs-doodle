@@ -1,6 +1,6 @@
 
 const THREE = require('three');
-const { initRenderCanvas, htmlMessage } = require('./shared/util');
+const { initRenderCanvas } = require('./shared/util');
 
 function main(rootEl) {
   const [w, h, renderer] = initRenderCanvas(rootEl);
@@ -36,8 +36,10 @@ function main(rootEl) {
   mesh.rotation.y += 1.1;
   /* No animate(), single frame render */
   renderer.render( scene, camera );
-  htmlMessage(rootEl, 'Stopped');
+  return () => {};
 }
 
+main.src = __filename;
+main.description = 'The End.';
 
 module.exports = main;

@@ -80,4 +80,11 @@ function main(rootEl, [w,h]) {
   return render;
 }
 
+main.src = __filename;
+
+main.description = `
+## Date and Time
+Type, gold material, single light source. Made TextHelper, refactored last one with it.
+`;
+
 module.exports = main;

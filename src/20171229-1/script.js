@@ -133,4 +133,13 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Fountain
+Compute shaders. Modeled gravity, suction, attraction to origin at bottom
+turning to repulsion from at top, and a small amount of drag. Positions
+clamped to bounding box.
+`;
+
 module.exports = main;

@@ -5,7 +5,7 @@ html, body {
   margin: 0px;
 }
 body {
-  color: #444444;
+  color: #222222;
   background-color: #ffffff;
   font-family: sans-serif;
 }
@@ -30,12 +30,29 @@ p {
   /*bottom: 0px;*/
 }
 #root p.float {
+  font-family: DejaVu Sans Mono, monospace;
   background: #ffffff;
   color: #111111;
-  border: 2px solid #444444;
-  text-align: center;
-  font-size: 1.5em;
+  border: 2px dashed #CCCCCC;
+  text-align: left;
+  font-size: 1.0em;
   margin: 2.0em 8em;
   padding: 0.8em;
-  opacity: 0.6;
+  animation: cssAnimation 3s forwards;
+}
+#root p.float:hover {
+  animation-play-state: paused;
+  background: #ffffee;
+  border: 2px solid #888888;
+  opacity: 0.95;
+}
+
+@keyframes cssAnimation {
+  00%  {opacity: 0.1;}
+  30%  {opacity: 0.6;}
+  75%  {opacity: 0.6;}
+  80%  {opacity: 0.7;}
+  85%  {opacity: 0.6;}
+  90%  {opacity: 0.8;}
+  100% {opacity: 0.0; display: none;}
 }

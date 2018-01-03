@@ -43,4 +43,11 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Gold Sphere
+Phong shading and 3 white light sources.
+`;
+
 module.exports = main;

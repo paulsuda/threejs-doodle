@@ -1,10 +1,12 @@
 
 const THREE = require('three');
+const { htmlMessage } = require('./shared/util');
+const marked = require('marked');
 
 const moduleList = [
   require('./20180101-1/script'),
   require('./20171229-1/script'),
-  require('./20171218-1/script'),
+  require('./20171218-1/script'), // 15
   require('./20171217-1/script'),
   require('./20171215-1/script'),
   require('./20171214-1/script'),
@@ -70,14 +72,25 @@ function routeListenAndInit(moduleList, routeFn){
   gotoLocation();
 }
 
+function showDescription(rootEl, number, mainFn) {
+  const description = (typeof mainFn.description === 'string') ?
+    mainFn.description : '- - -';
+  const src = mainFn.src;
+  const srcBase = 'https://github.com/paulsuda/threejs-doodle/blob/master/';
+  htmlMessage(rootEl, marked(`${description}\n\n### No. ${number}: [${src}](${srcBase}${src})\n`));
+}
+
 var _lastAnimationFrameRequestId = null;
 
-function showIndex(rootEl, i){
+function showIndex(rootEl, i, displayMessage){
   console.log(`showing index ${i}`);
   const viewModuleMain = moduleList[i];
   const urlIndex = moduleList.length - i - 1;
   rootEl.innerHTML = '';
   history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`);
+  if (displayMessage) {
+    showDescription(rootEl, urlIndex, viewModuleMain);
+  }
   /* Run the module. */
   const windowSize = [window.innerWidth, window.innerHeight];
   const animateHandler = viewModuleMain(rootEl, windowSize);
@@ -109,7 +122,7 @@ function main(rootEl) {
     if(newIndex){
       currentIndex = newIndex;
     }
-    showIndex(rootEl, currentIndex);
+    showIndex(rootEl, currentIndex, false);
   });
 
   keyListen(function(actionName){
@@ -128,7 +141,7 @@ function main(rootEl) {
     else if(actionName == 'stop'){
       currentIndex = moduleCount - 1;
     }
-    showIndex(rootEl, currentIndex);
+    showIndex(rootEl, currentIndex, true);
   });
 
   return;
