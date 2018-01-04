@@ -32,7 +32,7 @@ function main(rootEl, [w,h]) {
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, false, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
