@@ -7,7 +7,7 @@ function routeNameFromLocation(location){
   return routeIndex;
 }
 
-function handleLocation(){
+function handleLocation(moduleList){
   const routeName = routeNameFromLocation(document.location);
   const routeIndex = parseInt(routeName);
   if((routeIndex >= 0) && (routeIndex < (moduleList.length + 1))){
@@ -19,7 +19,7 @@ function handleLocation(){
 
 function routeListenAndInit(moduleList, routeFn){
   function gotoLocation(){
-    const routeIndex = handleLocation();
+    const routeIndex = handleLocation(moduleList);
     routeFn(routeIndex);
   }
   window.onpopstate = gotoLocation;

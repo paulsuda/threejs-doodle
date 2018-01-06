@@ -26,32 +26,6 @@ function keyListen(callbackFn){
   }, false);
 }
 
-function routeNameFromLocation(location){
-  const hash = location.hash;
-  // Remove the '#'
-  const routeName = hash.substring(1);
-  const routeIndex = parseInt(routeName);
-  return routeIndex;
-}
-
-function handleLocation(){
-  const routeName = routeNameFromLocation(document.location);
-  const routeIndex = parseInt(routeName);
-  if((routeIndex >= 0) && (routeIndex < (moduleList.length + 1))){
-    const moduleListIndex = moduleList.length - routeIndex - 1;
-    return moduleListIndex;
-  }
-  return null;
-}
-
-function routeListenAndInit(moduleList, routeFn){
-  function gotoLocation(){
-    const routeIndex = handleLocation();
-    routeFn(routeIndex);
-  }
-  window.onpopstate = gotoLocation;
-  gotoLocation();
-}
 
 function showDescription(rootEl, number, mainFn) {
   const description = (typeof mainFn.description === 'string') ?
