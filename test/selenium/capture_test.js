@@ -1,12 +1,12 @@
 
 const test = require('ava');
 const webdriver = require('selenium-webdriver');
+const webdriverSetup = require('../helpers/webdriverSetup');
+
+
 
 test.beforeEach(t => {
-  t.context.driver = new webdriver.Builder()
-                        .forBrowser('chrome')
-                        .usingServer('http://localhost:9515/')
-                        .build();
+  webdriverSetup(t);
 });
 
 test('webdriver webdriver', t => {
