@@ -1,5 +1,16 @@
 
+const marked = require('marked');
 const THREE = require('three');
+
+
+function showDescription(rootEl, number, mainFn) {
+  const description = (typeof mainFn.description === 'string') ?
+    mainFn.description : '- - -';
+  const src = mainFn.src;
+  const srcBase = 'https://github.com/paulsuda/threejs-doodle/blob/master/';
+  htmlMessage(rootEl, marked(`${description}\n\n### No. ${number}: [${src}](${srcBase}${src})\n`));
+}
+
 
 function cubeFrame(size){
   const geometry = new THREE.BoxBufferGeometry( size, size, size );
@@ -31,9 +42,9 @@ function initRenderCanvas(rootEl, renderer, windowSizeCallback){
   let w, h;
 
   function onWindowResize() {
-    w = window.innerWidth;
-    h = window.innerHeight;
-    renderer.setPixelRatio( window.devicePixelRatio );
+    w = rootEl.clientWidth;
+    h = rootEl.clientHeight;
+    // renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( w, h );
     windowSizeCallback(w, h);
   }
@@ -54,4 +65,5 @@ function htmlMessage(rootEl, messageHtml){
   return p;
 }
 
-module.exports = { computeTextureSupportCheck, cubeFrame, htmlMessage, initRenderCanvas };
+module.exports = { computeTextureSupportCheck, cubeFrame,
+  showDescription, htmlMessage, initRenderCanvas };

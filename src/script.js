@@ -1,9 +1,12 @@
 
 const THREE = require('three');
-const { htmlMessage } = require('./shared/util');
-const marked = require('marked');
+const { showDescription, htmlMessage } = require('./shared/util');
 const moduleList = require('./conf/moduleList');
-const { routeListenAndInit } = require('./shared/routes');
+const { getLocationModuleIndex, routeListenAndInit } = require('./shared/routes');
+const gifshot = require('gifshot');
+
+
+var _lastAnimationFrameRequestId = null;
 
 function keyListen(callbackFn){
   document.addEventListener('keydown', (event) => {
@@ -26,19 +29,7 @@ function keyListen(callbackFn){
   }, false);
 }
 
-
-function showDescription(rootEl, number, mainFn) {
-  const description = (typeof mainFn.description === 'string') ?
-    mainFn.description : '- - -';
-  const src = mainFn.src;
-  const srcBase = 'https://github.com/paulsuda/threejs-doodle/blob/master/';
-  htmlMessage(rootEl, marked(`${description}\n\n### No. ${number}: [${src}](${srcBase}${src})\n`));
-}
-
-var _lastAnimationFrameRequestId = null;
-
-function showIndex(rootEl, i, displayMessage){
-  console.log(`showing index ${i}`);
+function setupShowIndex(rootEl, i, displayMessage){
   const viewModuleMain = moduleList[i];
   const urlIndex = moduleList.length - i - 1;
   rootEl.innerHTML = '';
@@ -48,7 +39,57 @@ function showIndex(rootEl, i, displayMessage){
   }
   /* Run the module. */
   const windowSize = [window.innerWidth, window.innerHeight];
-  const animateHandler = viewModuleMain(rootEl, windowSize);
+  return viewModuleMain(rootEl, windowSize);
+}
+
+function getCanvasEl(rootEl){
+  const el = rootEl.children[0];
+  if(el.tagName !== "CANVAS"){
+    throw new Error(`Element "${el.tagName}" should be <CANVAS> in getCanvasEl()`);
+  }
+  return el;
+}
+
+function captureMain(rootEl, i, width, height, timeIncrement, frameCount){
+  console.log(`capturing index ${i}`);
+  const animateHandler = setupShowIndex(rootEl, i, false);
+  const frameDataList = [];
+  const canvasEl = getCanvasEl(rootEl);
+  for(let i = 0; i < frameCount; i++){
+    const frameTime = timeIncrement * i;
+    console.log(`capturing frame ${i} of ${frameCount} at ${frameTime} seconds`);
+    animateHandler(timeIncrement);
+    frameDataList.push(canvasEl.toDataURL());
+  }
+  console.log('building GIF image...');
+  htmlMessage(rootEl, 'Building image...');
+  gifshot.createGIF({
+    images: frameDataList,
+    interval: timeIncrement,
+    numFrames: frameDataList.length,
+    savedRenderingContexts: true, /* gets us canvas to work with */
+    gifWidth: width,
+    gifHeight: height,
+  }, (obj) => {
+    console.log('... done building GIF');
+    if (obj.error) {
+      throw new Error(`Save to GIF failed: ${obj.errorMsg}`);
+    } else {
+      const imgDataUrl = obj.image;
+      htmlMessage(rootEl, `Done. Data URL size: ${imgDataUrl.length}`);
+      var gifImage = new Image(width, height);
+      gifImage.src = imgDataUrl;
+      gifImage.classList.add('output');
+      console.log('test', rootEl);
+      rootEl.appendChild(gifImage);
+      canvasEl.style.display = "none";
+    }
+  });
+}
+
+function showIndex(rootEl, i, displayMessage){
+  console.log(`showing index ${i}`);
+  const animateHandler = setupShowIndex(rootEl, i, displayMessage);
   /* Cancel any outstanding frame requests. */
   window.cancelAnimationFrame(_lastAnimationFrameRequestId);
   /* Request frames and run animateHandler() to render. */
@@ -70,6 +111,27 @@ function showIndex(rootEl, i, displayMessage){
 }
 
 function main(rootEl) {
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.has('capture')){
+    const moduleIndex = getLocationModuleIndex(moduleList);
+    const width = urlParams.get('w') || 320;
+    const height = urlParams.get('h') || 240;
+    const timeIncrement = parseFloat(urlParams.get('t')) || 0.1;
+    const frameCount = parseInt(urlParams.get('n')) || 6;
+    rootEl.classList.add('capture-mode');
+    rootEl.style.width = `${width}px`;
+    rootEl.style.height = `${height}px`;
+    return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount);
+  }
+  else{
+    rootEl.style.width = "auto";
+    rootEl.style.height = "height";
+    rootEl.classList.add('interactive-mode');
+    return interactiveMain(rootEl);
+  }
+}
+
+function interactiveMain(rootEl){
   let currentIndex = 0;
   const moduleCount = moduleList.length;
 

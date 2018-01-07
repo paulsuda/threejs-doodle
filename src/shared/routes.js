@@ -7,23 +7,23 @@ function routeNameFromLocation(location){
   return routeIndex;
 }
 
-function handleLocation(moduleList){
+function getLocationModuleIndex(moduleList){
   const routeName = routeNameFromLocation(document.location);
   const routeIndex = parseInt(routeName);
   if((routeIndex >= 0) && (routeIndex < (moduleList.length + 1))){
     const moduleListIndex = moduleList.length - routeIndex - 1;
     return moduleListIndex;
   }
-  return null;
+  throw new Error(`Couldn't find route "${routeName}"`);
 }
 
 function routeListenAndInit(moduleList, routeFn){
   function gotoLocation(){
-    const routeIndex = handleLocation(moduleList);
+    const routeIndex = getLocationModuleIndex(moduleList);
     routeFn(routeIndex);
   }
   window.onpopstate = gotoLocation;
   gotoLocation();
 }
 
-module.exports = { routeListenAndInit, routeNameFromLocation };
+module.exports = { routeListenAndInit, routeNameFromLocation, getLocationModuleIndex };

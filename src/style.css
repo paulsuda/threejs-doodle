@@ -47,6 +47,13 @@ p {
   opacity: 0.95;
 }
 
+#root.capture-mode img.output {
+  border: 3px solid #444444;
+}
+#root.capture-mode canvas {
+  border: 3px solid #11ff11;
+}
+
 @keyframes cssAnimation {
   00%  {opacity: 0.1;}
   30%  {opacity: 0.6;}
