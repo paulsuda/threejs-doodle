@@ -50,22 +50,31 @@ function getCanvasEl(rootEl){
   return el;
 }
 
-function captureMain(rootEl, i, width, height, timeIncrement, frameCount){
+function captureMain(rootEl, i, width, height, timeIncrement, frameCount, skipFrames){
   console.log(`capturing index ${i}`);
   const animateHandler = setupShowIndex(rootEl, i, false);
   const frameDataList = [];
   const canvasEl = getCanvasEl(rootEl);
-  for(let i = 0; i < frameCount; i++){
+  const cycleFrames = skipFrames + 1;
+  const frameTimeIncrement = cycleFrames * timeIncrement;
+  const totalCount = frameCount * cycleFrames;
+  for(let i = 0; i < totalCount; i++){
     const frameTime = timeIncrement * i;
-    console.log(`capturing frame ${i} of ${frameCount} at ${frameTime} seconds`);
     animateHandler(timeIncrement);
-    frameDataList.push(canvasEl.toDataURL());
+    const recordingFrame = Math.floor(i / cycleFrames) + 1;
+    if(i % cycleFrames === 0){
+      console.log(`capturing frame ${recordingFrame} of ${frameCount} at ${frameTime} seconds`);
+      frameDataList.push(canvasEl.toDataURL());
+    }
+    else{
+      console.log(`skipping recording of frame ${recordingFrame} + ${i % cycleFrames} of ${frameCount} at ${frameTime} seconds`);
+    }
   }
   console.log('building GIF image...');
   htmlMessage(rootEl, 'Building image...');
   gifshot.createGIF({
     images: frameDataList,
-    interval: timeIncrement,
+    interval: frameTimeIncrement,
     numFrames: frameDataList.length,
     savedRenderingContexts: true, /* gets us canvas to work with */
     gifWidth: width,
@@ -118,10 +127,11 @@ function main(rootEl) {
     const height = urlParams.get('h') || 240;
     const timeIncrement = parseFloat(urlParams.get('t')) || 0.1;
     const frameCount = parseInt(urlParams.get('n')) || 6;
+    const skipFrames = parseInt(urlParams.get('s')) || 0;
     rootEl.classList.add('capture-mode');
     rootEl.style.width = `${width}px`;
     rootEl.style.height = `${height}px`;
-    return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount);
+    return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount, skipFrames);
   }
   else{
     rootEl.style.width = "auto";
