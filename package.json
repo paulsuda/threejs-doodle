@@ -4,7 +4,7 @@
   "description": "My Threejs experiments.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ava",
     "start": "webpack-dev-server",
     "build": "webpack",
     "lint": "eslint src"
@@ -28,5 +28,9 @@
     "three": "^0.88.0",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.5"
+  },
+  "devDependencies": {
+    "ava": "^0.24.0",
+    "selenium-webdriver": "^3.6.0"
   }
 }
