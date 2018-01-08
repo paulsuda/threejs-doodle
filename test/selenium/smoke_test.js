@@ -1,11 +1,9 @@
 
 const test = require('ava');
 const webdriver = require('selenium-webdriver');
-const webdriverSetup = require('../helpers/webdriverSetup');
+const { initWebdriverTests } = require('../helpers/webdriverSetup');
 
-test.beforeEach(t => {
-  webdriverSetup(t);
-});
+initWebdriverTests(test);
 
 test('page loads with title', t => {
   let driver = t.context.driver;
@@ -15,6 +13,5 @@ test('page loads with title', t => {
     return driver.getTitle();
   }).then((title) => {
     t.is(title, "threejs-doodle");
-    return driver.quit();
   });
 });

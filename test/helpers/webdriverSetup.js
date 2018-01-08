@@ -9,4 +9,15 @@ function webdriverSetup(t){
   t.context.driver = driver;
 }
 
-module.exports = webdriverSetup;
+function webdriverCleanUp(t){
+  return t.context.driver.quit();
+}
+
+function initWebdriverTests(test){
+  test.beforeEach(webdriverSetup);
+  test.afterEach(webdriverCleanUp);
+}
+
+module.exports = {
+  webdriverSetup, webdriverCleanUp, initWebdriverTests
+};

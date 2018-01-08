@@ -19,7 +19,12 @@ function getLocationModuleIndex(moduleList){
 
 function routeListenAndInit(moduleList, routeFn){
   function gotoLocation(){
-    const routeIndex = getLocationModuleIndex(moduleList);
+    let routeIndex = 0;
+    try {
+      routeIndex = getLocationModuleIndex(moduleList);
+    } catch(err) {
+      console.error('err get location', err);
+    }
     routeFn(routeIndex);
   }
   window.onpopstate = gotoLocation;
