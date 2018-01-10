@@ -72,7 +72,11 @@ function captureMain(rootEl, i, width, height, timeIncrement, frameCount, skipFr
   }
   console.log('building GIF image...');
   htmlMessage(rootEl, 'Building image...');
+  function progressCallback(p){
+    console.log(`gif encoding %${p * 100} done`)
+  }
   gifshot.createGIF({
+    progressCallback: progressCallback,
     images: frameDataList,
     interval: frameTimeIncrement,
     numFrames: frameDataList.length,
@@ -131,6 +135,8 @@ function main(rootEl) {
     rootEl.classList.add('capture-mode');
     rootEl.style.width = `${width}px`;
     rootEl.style.height = `${height}px`;
+    const queryString = `?capture=1&w=${width}&h=${height}&t=${timeIncrement}&n=${frameCount}&s=${skipFrames}`;
+    console.log(location.origin + location.pathname + queryString + location.hash);
     return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount, skipFrames);
   }
   else{
