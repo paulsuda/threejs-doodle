@@ -10,6 +10,9 @@ function webdriverSetup(t){
 }
 
 function webdriverCleanUp(t){
+  t.context.driver.manage().logs().get("browser").then((l) => {
+    console.log('console:', l);
+  });
   return t.context.driver.quit();
 }
 

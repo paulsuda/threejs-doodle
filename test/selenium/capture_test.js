@@ -10,6 +10,7 @@ const { initWebdriverTests } = require('../helpers/webdriverSetup');
 initWebdriverTests(test);
 
 function testCapture(t, captureIndex, captureQueryOptions, options){
+  const driver = t.context.driver;
   const { captureTimeout, saveCapturePath } = Object.assign({
     captureTimeout: 8000,
     saveCapturePath: './docs/gif-captures/',
@@ -18,8 +19,9 @@ function testCapture(t, captureIndex, captureQueryOptions, options){
     capture: 'true',
   }, captureQueryOptions);
   const captureQueryString = queryString.stringify(captureQueryParams);
-  let driver = t.context.driver;
-  return driver.get(`http://localhost:9000/?${captureQueryString}#${captureIndex}`).then(() => {
+  const captureUrl = `http://localhost:9000/?${captureQueryString}#${captureIndex}`;
+  console.log('capturing w query', captureUrl, captureQueryParams);
+  return driver.get(captureUrl).then(() => {
     return driver.wait(webdriver.until.elementLocated(webdriver.By.css('img.output')), captureTimeout);
   }).then(() => {
     return driver.findElements(webdriver.By.css('img.output'));
@@ -34,12 +36,18 @@ function testCapture(t, captureIndex, captureQueryOptions, options){
   }).then(([imgWidth, imgHeight, imgBase64Src]) => {
     t.is(imgBase64Src.slice(0, 22), 'data:image/gif;base64,');
     const imgBase64 = imgBase64Src.slice(22, -1);
-    const saveName = `no${padStart(captureIndex, 6, '0')}-w${imgWidth}-h${imgHeight}.gif`;
+    const saveName = `no${padStart(captureIndex, 4, '0')}-w${imgWidth}-h${imgHeight}.gif`;
     const savePathName = path.join(saveCapturePath, saveName);
     let imgDataBuffer = new Buffer(imgBase64, 'base64');
     return new Promise(resolve => fs.writeFile(savePathName, imgDataBuffer, resolve));
   });
 }
+
+test('no 16 high quality', t => {
+  return testCapture(t, 16,
+    { w: 640, h: 480, t: 0.03, n: 204, s: 2 },
+    { captureTimeout: 120 * 1000 });
+});
 
 test('Capturing no. 8', t => {
   return testCapture(t, 8);
