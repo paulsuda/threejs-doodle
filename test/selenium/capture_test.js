@@ -46,7 +46,13 @@ function testCapture(t, captureIndex, captureQueryOptions, options){
 test('no 16 high quality', t => {
   return testCapture(t, 16,
     { w: 640, h: 480, t: 0.03, n: 204, s: 2 },
-    { captureTimeout: 120 * 1000 });
+    { captureTimeout: 3 * 60 * 1000 });
+});
+
+test('no 16 med quality', t => {
+  return testCapture(t, 16,
+    { w: 480, h: 360, t: 0.03, n: 204, s: 2 },
+    { captureTimeout: 3 * 60 * 1000 });
 });
 
 test('no 8 w defaults', t => {

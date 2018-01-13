@@ -4,7 +4,7 @@
   "description": "My Threejs experiments.",
   "main": "index.js",
   "scripts": {
-    "test": "ava -v",
+    "test": "ava --verbose --serial",
     "start": "webpack-dev-server",
     "build": "webpack",
     "lint": "eslint src"
