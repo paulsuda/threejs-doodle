@@ -45130,7 +45130,17 @@ function CanvasRenderer() {
 /***/ (function(module, exports, __webpack_require__) {
 
 
+const marked = __webpack_require__(13);
 const THREE = __webpack_require__(0);
+
+
+function showDescription(rootEl, number, mainFn) {
+  const description = (typeof mainFn.description === 'string') ?
+    mainFn.description : '- - -';
+  const src = mainFn.src;
+  const srcBase = 'https://github.com/paulsuda/threejs-doodle/blob/master/';
+  htmlMessage(rootEl, marked(`${description}\n\n### No. ${number}: [${src}](${srcBase}${src})\n`));
+}
 
 
 function cubeFrame(size){
@@ -45163,9 +45173,9 @@ function initRenderCanvas(rootEl, renderer, windowSizeCallback){
   let w, h;
 
   function onWindowResize() {
-    w = window.innerWidth;
-    h = window.innerHeight;
-    renderer.setPixelRatio( window.devicePixelRatio );
+    w = rootEl.clientWidth;
+    h = rootEl.clientHeight;
+    // renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( w, h );
     windowSizeCallback(w, h);
   }
@@ -45178,17 +45188,16 @@ function initRenderCanvas(rootEl, renderer, windowSizeCallback){
   return [w, h, renderer];
 }
 
-
-function htmlMessage(rootEl, messageText){
+function htmlMessage(rootEl, messageHtml){
   const p = document.createElement('p');
-  const t = document.createTextNode(messageText);
+  p.innerHTML = messageHtml;
   p.className = 'float';
-  p.appendChild(t);
   rootEl.appendChild(p);
   return p;
 }
 
-module.exports = { computeTextureSupportCheck, cubeFrame, htmlMessage, initRenderCanvas };
+module.exports = { computeTextureSupportCheck, cubeFrame,
+  showDescription, htmlMessage, initRenderCanvas };
 
 
 /***/ }),
@@ -45198,7 +45207,7 @@ module.exports = { computeTextureSupportCheck, cubeFrame, htmlMessage, initRende
 
 const THREE = __webpack_require__(0);
 const { computeTextureSupportCheck } = __webpack_require__(1);
-const computeVertexPassPositionCode = __webpack_require__(16);
+const computeVertexPassPositionCode = __webpack_require__(18);
 
 class ComputeShaderRunner {
   constructor(renderer, textureWidth, uniformInfoList, fragmentShaderCode) {
@@ -45313,6 +45322,33 @@ module.exports = ComputeShaderRunner;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const THREE = __webpack_require__(0);
@@ -45377,7 +45413,7 @@ module.exports = TextHelper;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 
@@ -46435,40 +46471,13 @@ module.exports = THREE.OrbitControls;
 
 
 /***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* eslint-disable no-unused-vars */
 const assert = __webpack_require__(7);
 const script = __webpack_require__(12);
-const css = __webpack_require__(40);
+const css = __webpack_require__(44);
 const rootId = 'root';
 
 const rootEl = document.getElementById(rootId); // eslint-disable-line no-undef
@@ -46972,7 +46981,7 @@ var objectKeys = Object.keys || function (obj) {
   return keys;
 };
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ }),
 /* 8 */
@@ -47565,7 +47574,7 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(9)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3), __webpack_require__(9)))
 
 /***/ }),
 /* 9 */
@@ -47803,27 +47812,13 @@ if (typeof Object.create === 'function') {
 
 
 const THREE = __webpack_require__(0);
+const { showDescription, htmlMessage } = __webpack_require__(1);
+const moduleList = __webpack_require__(14);
+const { getLocationModuleIndex, routeListenAndInit } = __webpack_require__(42);
+const gifshot = __webpack_require__(43);
 
-const moduleList = [
-  __webpack_require__(13),
-  __webpack_require__(17),
-  __webpack_require__(20),
-  __webpack_require__(23),
-  __webpack_require__(25),
-  __webpack_require__(27),
-  __webpack_require__(28),
-  __webpack_require__(29), // 10
-  __webpack_require__(30),
-  __webpack_require__(31),
-  __webpack_require__(32),
-  __webpack_require__(33),
-  __webpack_require__(34), // 5
-  __webpack_require__(35),
-  __webpack_require__(36),
-  __webpack_require__(37),
-  __webpack_require__(38), // 1
-  __webpack_require__(39),
-];
+
+var _lastAnimationFrameRequestId = null;
 
 function keyListen(callbackFn){
   document.addEventListener('keydown', (event) => {
@@ -47846,44 +47841,80 @@ function keyListen(callbackFn){
   }, false);
 }
 
-function routeNameFromLocation(location){
-  const hash = location.hash;
-  // Remove the '#'
-  const routeName = hash.substring(1);
-  const routeIndex = parseInt(routeName);
-  return routeIndex;
-}
-
-function handleLocation(){
-  const routeName = routeNameFromLocation(document.location);
-  const routeIndex = parseInt(routeName);
-  if((routeIndex >= 0) && (routeIndex < (moduleList.length + 1))){
-    const moduleListIndex = moduleList.length - routeIndex - 1;
-    return moduleListIndex;
-  }
-  return null;
-}
-
-function routeListenAndInit(moduleList, routeFn){
-  function gotoLocation(){
-    const routeIndex = handleLocation();
-    routeFn(routeIndex);
-  }
-  window.onpopstate = gotoLocation;
-  gotoLocation();
-}
-
-var _lastAnimationFrameRequestId = null;
-
-function showIndex(rootEl, i){
-  console.log(`showing index ${i}`);
+function setupShowIndex(rootEl, i, displayMessage){
   const viewModuleMain = moduleList[i];
   const urlIndex = moduleList.length - i - 1;
   rootEl.innerHTML = '';
   history.pushState({moduleIndex: i, urlIndex: urlIndex}, `page ${urlIndex}`, `#${urlIndex}`);
+  if (displayMessage) {
+    showDescription(rootEl, urlIndex, viewModuleMain);
+  }
   /* Run the module. */
   const windowSize = [window.innerWidth, window.innerHeight];
-  const animateHandler = viewModuleMain(rootEl, windowSize);
+  return viewModuleMain(rootEl, windowSize);
+}
+
+function getCanvasEl(rootEl){
+  const el = rootEl.children[0];
+  if(el.tagName !== "CANVAS"){
+    throw new Error(`Element "${el.tagName}" should be <CANVAS> in getCanvasEl()`);
+  }
+  return el;
+}
+
+function captureMain(rootEl, i, width, height, timeIncrement, frameCount, skipFrames){
+  console.log(`capturing index ${i}`);
+  const animateHandler = setupShowIndex(rootEl, i, false);
+  const frameDataList = [];
+  const canvasEl = getCanvasEl(rootEl);
+  const cycleFrames = skipFrames + 1;
+  const frameTimeIncrement = cycleFrames * timeIncrement;
+  const totalCount = frameCount * cycleFrames;
+  for(let i = 0; i < totalCount; i++){
+    const frameTime = timeIncrement * i;
+    animateHandler(timeIncrement);
+    const recordingFrame = Math.floor(i / cycleFrames) + 1;
+    if(i % cycleFrames === 0){
+      console.log(`capturing frame ${recordingFrame} of ${frameCount} at ${frameTime} seconds`);
+      frameDataList.push(canvasEl.toDataURL());
+    }
+    else{
+      console.log(`skipping recording of frame ${recordingFrame} + ${i % cycleFrames} of ${frameCount} at ${frameTime} seconds`);
+    }
+  }
+  console.log('building GIF image...');
+  htmlMessage(rootEl, 'Building image...');
+  function progressCallback(p){
+    console.log(`gif encoding %${p * 100} done`)
+  }
+  gifshot.createGIF({
+    progressCallback: progressCallback,
+    images: frameDataList,
+    interval: frameTimeIncrement,
+    numFrames: frameDataList.length,
+    savedRenderingContexts: true, /* gets us canvas to work with */
+    gifWidth: width,
+    gifHeight: height,
+  }, (obj) => {
+    console.log('... done building GIF');
+    if (obj.error) {
+      throw new Error(`Save to GIF failed: ${obj.errorMsg}`);
+    } else {
+      const imgDataUrl = obj.image;
+      htmlMessage(rootEl, `Done. Data URL size: ${imgDataUrl.length}`);
+      var gifImage = new Image(width, height);
+      gifImage.src = imgDataUrl;
+      gifImage.classList.add('output');
+      console.log('test', rootEl);
+      rootEl.appendChild(gifImage);
+      canvasEl.style.display = "none";
+    }
+  });
+}
+
+function showIndex(rootEl, i, displayMessage){
+  console.log(`showing index ${i}`);
+  const animateHandler = setupShowIndex(rootEl, i, displayMessage);
   /* Cancel any outstanding frame requests. */
   window.cancelAnimationFrame(_lastAnimationFrameRequestId);
   /* Request frames and run animateHandler() to render. */
@@ -47905,6 +47936,30 @@ function showIndex(rootEl, i){
 }
 
 function main(rootEl) {
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.has('capture')){
+    const moduleIndex = getLocationModuleIndex(moduleList);
+    const width = urlParams.get('w') || 320;
+    const height = urlParams.get('h') || 240;
+    const timeIncrement = parseFloat(urlParams.get('t')) || 0.1;
+    const frameCount = parseInt(urlParams.get('n')) || 6;
+    const skipFrames = parseInt(urlParams.get('s')) || 0;
+    rootEl.classList.add('capture-mode');
+    rootEl.style.width = `${width}px`;
+    rootEl.style.height = `${height}px`;
+    const queryString = `?capture=1&w=${width}&h=${height}&t=${timeIncrement}&n=${frameCount}&s=${skipFrames}`;
+    console.log(location.origin + location.pathname + queryString + location.hash);
+    return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount, skipFrames);
+  }
+  else{
+    rootEl.style.width = "auto";
+    rootEl.style.height = "height";
+    rootEl.classList.add('interactive-mode');
+    return interactiveMain(rootEl);
+  }
+}
+
+function interactiveMain(rootEl){
   let currentIndex = 0;
   const moduleCount = moduleList.length;
 
@@ -47912,7 +47967,7 @@ function main(rootEl) {
     if(newIndex){
       currentIndex = newIndex;
     }
-    showIndex(rootEl, currentIndex);
+    showIndex(rootEl, currentIndex, false);
   });
 
   keyListen(function(actionName){
@@ -47931,7 +47986,7 @@ function main(rootEl) {
     else if(actionName == 'stop'){
       currentIndex = moduleCount - 1;
     }
-    showIndex(rootEl, currentIndex);
+    showIndex(rootEl, currentIndex, true);
   });
 
   return;
@@ -47944,10 +47999,1361 @@ module.exports = main;
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const THREE = __webpack_require__(0);
+/* WEBPACK VAR INJECTION */(function(global) {/**
+ * marked - a markdown parser
+ * Copyright (c) 2011-2014, Christopher Jeffrey. (MIT Licensed)
+ * https://github.com/chjj/marked
+ */
+
+;(function() {
+
+/**
+ * Block-Level Grammar
+ */
+
+var block = {
+  newline: /^\n+/,
+  code: /^( {4}[^\n]+\n*)+/,
+  fences: noop,
+  hr: /^( *[-*_]){3,} *(?:\n+|$)/,
+  heading: /^ *(#{1,6}) *([^\n]+?) *#* *(?:\n+|$)/,
+  nptable: noop,
+  lheading: /^([^\n]+)\n *(=|-){2,} *(?:\n+|$)/,
+  blockquote: /^( *>[^\n]+(\n(?!def)[^\n]+)*\n*)+/,
+  list: /^( *)(bull) [\s\S]+?(?:hr|def|\n{2,}(?! )(?!\1bull )\n*|\s*$)/,
+  html: /^ *(?:comment *(?:\n|\s*$)|closed *(?:\n{2,}|\s*$)|closing *(?:\n{2,}|\s*$))/,
+  def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/,
+  table: noop,
+  paragraph: /^((?:[^\n]+\n?(?!hr|heading|lheading|blockquote|tag|def))+)\n*/,
+  text: /^[^\n]+/
+};
+
+block.bullet = /(?:[*+-]|\d+\.)/;
+block.item = /^( *)(bull) [^\n]*(?:\n(?!\1bull )[^\n]*)*/;
+block.item = replace(block.item, 'gm')
+  (/bull/g, block.bullet)
+  ();
+
+block.list = replace(block.list)
+  (/bull/g, block.bullet)
+  ('hr', '\\n+(?=\\1?(?:[-*_] *){3,}(?:\\n+|$))')
+  ('def', '\\n+(?=' + block.def.source + ')')
+  ();
+
+block._tag = '(?!(?:'
+  + 'a|em|strong|small|s|cite|q|dfn|abbr|data|time|code'
+  + '|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo'
+  + '|span|br|wbr|ins|del|img)\\b)\\w+(?!:/|[^\\w\\s@]*@)\\b';
+
+block.html = replace(block.html)
+  ('comment', /<!--[\s\S]*?-->/)
+  ('closed', /<(tag)[\s\S]+?<\/\1>/)
+  ('closing', /<tag(?:"[^"]*"|'[^']*'|[^'">])*?>/)
+  (/tag/g, block._tag)
+  ();
+
+block.paragraph = replace(block.paragraph)
+  ('hr', block.hr)
+  ('heading', block.heading)
+  ('lheading', block.lheading)
+  ('blockquote', block.blockquote)
+  ('tag', '<' + block._tag)
+  ('def', block.def)
+  ();
+
+/**
+ * Normal Block Grammar
+ */
+
+block.normal = merge({}, block);
+
+/**
+ * GFM Block Grammar
+ */
+
+block.gfm = merge({}, block.normal, {
+  fences: /^ *(`{3,}|~{3,})[ \.]*(\S+)? *\n([\s\S]*?)\s*\1 *(?:\n+|$)/,
+  paragraph: /^/,
+  heading: /^ *(#{1,6}) +([^\n]+?) *#* *(?:\n+|$)/
+});
+
+block.gfm.paragraph = replace(block.paragraph)
+  ('(?!', '(?!'
+    + block.gfm.fences.source.replace('\\1', '\\2') + '|'
+    + block.list.source.replace('\\1', '\\3') + '|')
+  ();
+
+/**
+ * GFM + Tables Block Grammar
+ */
+
+block.tables = merge({}, block.gfm, {
+  nptable: /^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*/,
+  table: /^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*/
+});
+
+/**
+ * Block Lexer
+ */
+
+function Lexer(options) {
+  this.tokens = [];
+  this.tokens.links = {};
+  this.options = options || marked.defaults;
+  this.rules = block.normal;
+
+  if (this.options.gfm) {
+    if (this.options.tables) {
+      this.rules = block.tables;
+    } else {
+      this.rules = block.gfm;
+    }
+  }
+}
+
+/**
+ * Expose Block Rules
+ */
+
+Lexer.rules = block;
+
+/**
+ * Static Lex Method
+ */
+
+Lexer.lex = function(src, options) {
+  var lexer = new Lexer(options);
+  return lexer.lex(src);
+};
+
+/**
+ * Preprocessing
+ */
+
+Lexer.prototype.lex = function(src) {
+  src = src
+    .replace(/\r\n|\r/g, '\n')
+    .replace(/\t/g, '    ')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\u2424/g, '\n');
+
+  return this.token(src, true);
+};
+
+/**
+ * Lexing
+ */
+
+Lexer.prototype.token = function(src, top, bq) {
+  var src = src.replace(/^ +$/gm, '')
+    , next
+    , loose
+    , cap
+    , bull
+    , b
+    , item
+    , space
+    , i
+    , l;
+
+  while (src) {
+    // newline
+    if (cap = this.rules.newline.exec(src)) {
+      src = src.substring(cap[0].length);
+      if (cap[0].length > 1) {
+        this.tokens.push({
+          type: 'space'
+        });
+      }
+    }
+
+    // code
+    if (cap = this.rules.code.exec(src)) {
+      src = src.substring(cap[0].length);
+      cap = cap[0].replace(/^ {4}/gm, '');
+      this.tokens.push({
+        type: 'code',
+        text: !this.options.pedantic
+          ? cap.replace(/\n+$/, '')
+          : cap
+      });
+      continue;
+    }
+
+    // fences (gfm)
+    if (cap = this.rules.fences.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'code',
+        lang: cap[2],
+        text: cap[3] || ''
+      });
+      continue;
+    }
+
+    // heading
+    if (cap = this.rules.heading.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'heading',
+        depth: cap[1].length,
+        text: cap[2]
+      });
+      continue;
+    }
+
+    // table no leading pipe (gfm)
+    if (top && (cap = this.rules.nptable.exec(src))) {
+      src = src.substring(cap[0].length);
+
+      item = {
+        type: 'table',
+        header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
+        align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
+        cells: cap[3].replace(/\n$/, '').split('\n')
+      };
+
+      for (i = 0; i < item.align.length; i++) {
+        if (/^ *-+: *$/.test(item.align[i])) {
+          item.align[i] = 'right';
+        } else if (/^ *:-+: *$/.test(item.align[i])) {
+          item.align[i] = 'center';
+        } else if (/^ *:-+ *$/.test(item.align[i])) {
+          item.align[i] = 'left';
+        } else {
+          item.align[i] = null;
+        }
+      }
+
+      for (i = 0; i < item.cells.length; i++) {
+        item.cells[i] = item.cells[i].split(/ *\| */);
+      }
+
+      this.tokens.push(item);
+
+      continue;
+    }
+
+    // lheading
+    if (cap = this.rules.lheading.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'heading',
+        depth: cap[2] === '=' ? 1 : 2,
+        text: cap[1]
+      });
+      continue;
+    }
+
+    // hr
+    if (cap = this.rules.hr.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'hr'
+      });
+      continue;
+    }
+
+    // blockquote
+    if (cap = this.rules.blockquote.exec(src)) {
+      src = src.substring(cap[0].length);
+
+      this.tokens.push({
+        type: 'blockquote_start'
+      });
+
+      cap = cap[0].replace(/^ *> ?/gm, '');
+
+      // Pass `top` to keep the current
+      // "toplevel" state. This is exactly
+      // how markdown.pl works.
+      this.token(cap, top, true);
+
+      this.tokens.push({
+        type: 'blockquote_end'
+      });
+
+      continue;
+    }
+
+    // list
+    if (cap = this.rules.list.exec(src)) {
+      src = src.substring(cap[0].length);
+      bull = cap[2];
+
+      this.tokens.push({
+        type: 'list_start',
+        ordered: bull.length > 1
+      });
+
+      // Get each top-level item.
+      cap = cap[0].match(this.rules.item);
+
+      next = false;
+      l = cap.length;
+      i = 0;
+
+      for (; i < l; i++) {
+        item = cap[i];
+
+        // Remove the list item's bullet
+        // so it is seen as the next token.
+        space = item.length;
+        item = item.replace(/^ *([*+-]|\d+\.) +/, '');
+
+        // Outdent whatever the
+        // list item contains. Hacky.
+        if (~item.indexOf('\n ')) {
+          space -= item.length;
+          item = !this.options.pedantic
+            ? item.replace(new RegExp('^ {1,' + space + '}', 'gm'), '')
+            : item.replace(/^ {1,4}/gm, '');
+        }
+
+        // Determine whether the next list item belongs here.
+        // Backpedal if it does not belong in this list.
+        if (this.options.smartLists && i !== l - 1) {
+          b = block.bullet.exec(cap[i + 1])[0];
+          if (bull !== b && !(bull.length > 1 && b.length > 1)) {
+            src = cap.slice(i + 1).join('\n') + src;
+            i = l - 1;
+          }
+        }
+
+        // Determine whether item is loose or not.
+        // Use: /(^|\n)(?! )[^\n]+\n\n(?!\s*$)/
+        // for discount behavior.
+        loose = next || /\n\n(?!\s*$)/.test(item);
+        if (i !== l - 1) {
+          next = item.charAt(item.length - 1) === '\n';
+          if (!loose) loose = next;
+        }
+
+        this.tokens.push({
+          type: loose
+            ? 'loose_item_start'
+            : 'list_item_start'
+        });
+
+        // Recurse.
+        this.token(item, false, bq);
+
+        this.tokens.push({
+          type: 'list_item_end'
+        });
+      }
+
+      this.tokens.push({
+        type: 'list_end'
+      });
+
+      continue;
+    }
+
+    // html
+    if (cap = this.rules.html.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: this.options.sanitize
+          ? 'paragraph'
+          : 'html',
+        pre: !this.options.sanitizer
+          && (cap[1] === 'pre' || cap[1] === 'script' || cap[1] === 'style'),
+        text: cap[0]
+      });
+      continue;
+    }
+
+    // def
+    if ((!bq && top) && (cap = this.rules.def.exec(src))) {
+      src = src.substring(cap[0].length);
+      this.tokens.links[cap[1].toLowerCase()] = {
+        href: cap[2],
+        title: cap[3]
+      };
+      continue;
+    }
+
+    // table (gfm)
+    if (top && (cap = this.rules.table.exec(src))) {
+      src = src.substring(cap[0].length);
+
+      item = {
+        type: 'table',
+        header: cap[1].replace(/^ *| *\| *$/g, '').split(/ *\| */),
+        align: cap[2].replace(/^ *|\| *$/g, '').split(/ *\| */),
+        cells: cap[3].replace(/(?: *\| *)?\n$/, '').split('\n')
+      };
+
+      for (i = 0; i < item.align.length; i++) {
+        if (/^ *-+: *$/.test(item.align[i])) {
+          item.align[i] = 'right';
+        } else if (/^ *:-+: *$/.test(item.align[i])) {
+          item.align[i] = 'center';
+        } else if (/^ *:-+ *$/.test(item.align[i])) {
+          item.align[i] = 'left';
+        } else {
+          item.align[i] = null;
+        }
+      }
+
+      for (i = 0; i < item.cells.length; i++) {
+        item.cells[i] = item.cells[i]
+          .replace(/^ *\| *| *\| *$/g, '')
+          .split(/ *\| */);
+      }
+
+      this.tokens.push(item);
+
+      continue;
+    }
+
+    // top-level paragraph
+    if (top && (cap = this.rules.paragraph.exec(src))) {
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'paragraph',
+        text: cap[1].charAt(cap[1].length - 1) === '\n'
+          ? cap[1].slice(0, -1)
+          : cap[1]
+      });
+      continue;
+    }
+
+    // text
+    if (cap = this.rules.text.exec(src)) {
+      // Top-level should never reach here.
+      src = src.substring(cap[0].length);
+      this.tokens.push({
+        type: 'text',
+        text: cap[0]
+      });
+      continue;
+    }
+
+    if (src) {
+      throw new
+        Error('Infinite loop on byte: ' + src.charCodeAt(0));
+    }
+  }
+
+  return this.tokens;
+};
+
+/**
+ * Inline-Level Grammar
+ */
+
+var inline = {
+  escape: /^\\([\\`*{}\[\]()#+\-.!_>])/,
+  autolink: /^<([^ >]+(@|:\/)[^ >]+)>/,
+  url: noop,
+  tag: /^<!--[\s\S]*?-->|^<\/?\w+(?:"[^"]*"|'[^']*'|[^'">])*?>/,
+  link: /^!?\[(inside)\]\(href\)/,
+  reflink: /^!?\[(inside)\]\s*\[([^\]]*)\]/,
+  nolink: /^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
+  strong: /^__([\s\S]+?)__(?!_)|^\*\*([\s\S]+?)\*\*(?!\*)/,
+  em: /^\b_((?:[^_]|__)+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
+  code: /^(`+)([\s\S]*?[^`])\1(?!`)/,
+  br: /^ {2,}\n(?!\s*$)/,
+  del: noop,
+  text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
+};
+
+inline._inside = /(?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*/;
+inline._href = /\s*<?([\s\S]*?)>?(?:\s+['"]([\s\S]*?)['"])?\s*/;
+
+inline.link = replace(inline.link)
+  ('inside', inline._inside)
+  ('href', inline._href)
+  ();
+
+inline.reflink = replace(inline.reflink)
+  ('inside', inline._inside)
+  ();
+
+/**
+ * Normal Inline Grammar
+ */
+
+inline.normal = merge({}, inline);
+
+/**
+ * Pedantic Inline Grammar
+ */
+
+inline.pedantic = merge({}, inline.normal, {
+  strong: /^__(?=\S)([\s\S]*?\S)__(?!_)|^\*\*(?=\S)([\s\S]*?\S)\*\*(?!\*)/,
+  em: /^_(?=\S)([\s\S]*?\S)_(?!_)|^\*(?=\S)([\s\S]*?\S)\*(?!\*)/
+});
+
+/**
+ * GFM Inline Grammar
+ */
+
+inline.gfm = merge({}, inline.normal, {
+  escape: replace(inline.escape)('])', '~|])')(),
+  url: /^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])/,
+  del: /^~~(?=\S)([\s\S]*?\S)~~/,
+  text: replace(inline.text)
+    (']|', '~]|')
+    ('|', '|https?://|')
+    ()
+});
+
+/**
+ * GFM + Line Breaks Inline Grammar
+ */
+
+inline.breaks = merge({}, inline.gfm, {
+  br: replace(inline.br)('{2,}', '*')(),
+  text: replace(inline.gfm.text)('{2,}', '*')()
+});
+
+/**
+ * Inline Lexer & Compiler
+ */
+
+function InlineLexer(links, options) {
+  this.options = options || marked.defaults;
+  this.links = links;
+  this.rules = inline.normal;
+  this.renderer = this.options.renderer || new Renderer;
+  this.renderer.options = this.options;
+
+  if (!this.links) {
+    throw new
+      Error('Tokens array requires a `links` property.');
+  }
+
+  if (this.options.gfm) {
+    if (this.options.breaks) {
+      this.rules = inline.breaks;
+    } else {
+      this.rules = inline.gfm;
+    }
+  } else if (this.options.pedantic) {
+    this.rules = inline.pedantic;
+  }
+}
+
+/**
+ * Expose Inline Rules
+ */
+
+InlineLexer.rules = inline;
+
+/**
+ * Static Lexing/Compiling Method
+ */
+
+InlineLexer.output = function(src, links, options) {
+  var inline = new InlineLexer(links, options);
+  return inline.output(src);
+};
+
+/**
+ * Lexing/Compiling
+ */
+
+InlineLexer.prototype.output = function(src) {
+  var out = ''
+    , link
+    , text
+    , href
+    , cap;
+
+  while (src) {
+    // escape
+    if (cap = this.rules.escape.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += cap[1];
+      continue;
+    }
+
+    // autolink
+    if (cap = this.rules.autolink.exec(src)) {
+      src = src.substring(cap[0].length);
+      if (cap[2] === '@') {
+        text = escape(
+          cap[1].charAt(6) === ':'
+          ? this.mangle(cap[1].substring(7))
+          : this.mangle(cap[1])
+        );
+        href = this.mangle('mailto:') + text;
+      } else {
+        text = escape(cap[1]);
+        href = text;
+      }
+      out += this.renderer.link(href, null, text);
+      continue;
+    }
+
+    // url (gfm)
+    if (!this.inLink && (cap = this.rules.url.exec(src))) {
+      src = src.substring(cap[0].length);
+      text = escape(cap[1]);
+      href = text;
+      out += this.renderer.link(href, null, text);
+      continue;
+    }
+
+    // tag
+    if (cap = this.rules.tag.exec(src)) {
+      if (!this.inLink && /^<a /i.test(cap[0])) {
+        this.inLink = true;
+      } else if (this.inLink && /^<\/a>/i.test(cap[0])) {
+        this.inLink = false;
+      }
+      src = src.substring(cap[0].length);
+      out += this.options.sanitize
+        ? this.options.sanitizer
+          ? this.options.sanitizer(cap[0])
+          : escape(cap[0])
+        : cap[0]
+      continue;
+    }
+
+    // link
+    if (cap = this.rules.link.exec(src)) {
+      src = src.substring(cap[0].length);
+      this.inLink = true;
+      out += this.outputLink(cap, {
+        href: cap[2],
+        title: cap[3]
+      });
+      this.inLink = false;
+      continue;
+    }
+
+    // reflink, nolink
+    if ((cap = this.rules.reflink.exec(src))
+        || (cap = this.rules.nolink.exec(src))) {
+      src = src.substring(cap[0].length);
+      link = (cap[2] || cap[1]).replace(/\s+/g, ' ');
+      link = this.links[link.toLowerCase()];
+      if (!link || !link.href) {
+        out += cap[0].charAt(0);
+        src = cap[0].substring(1) + src;
+        continue;
+      }
+      this.inLink = true;
+      out += this.outputLink(cap, link);
+      this.inLink = false;
+      continue;
+    }
+
+    // strong
+    if (cap = this.rules.strong.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.strong(this.output(cap[2] || cap[1]));
+      continue;
+    }
+
+    // em
+    if (cap = this.rules.em.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.em(this.output(cap[2] || cap[1]));
+      continue;
+    }
+
+    // code
+    if (cap = this.rules.code.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.codespan(escape(cap[2].trim(), true));
+      continue;
+    }
+
+    // br
+    if (cap = this.rules.br.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.br();
+      continue;
+    }
+
+    // del (gfm)
+    if (cap = this.rules.del.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.del(this.output(cap[1]));
+      continue;
+    }
+
+    // text
+    if (cap = this.rules.text.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.renderer.text(escape(this.smartypants(cap[0])));
+      continue;
+    }
+
+    if (src) {
+      throw new
+        Error('Infinite loop on byte: ' + src.charCodeAt(0));
+    }
+  }
+
+  return out;
+};
+
+/**
+ * Compile Link
+ */
+
+InlineLexer.prototype.outputLink = function(cap, link) {
+  var href = escape(link.href)
+    , title = link.title ? escape(link.title) : null;
+
+  return cap[0].charAt(0) !== '!'
+    ? this.renderer.link(href, title, this.output(cap[1]))
+    : this.renderer.image(href, title, escape(cap[1]));
+};
+
+/**
+ * Smartypants Transformations
+ */
+
+InlineLexer.prototype.smartypants = function(text) {
+  if (!this.options.smartypants) return text;
+  return text
+    // em-dashes
+    .replace(/---/g, '\u2014')
+    // en-dashes
+    .replace(/--/g, '\u2013')
+    // opening singles
+    .replace(/(^|[-\u2014/(\[{"\s])'/g, '$1\u2018')
+    // closing singles & apostrophes
+    .replace(/'/g, '\u2019')
+    // opening doubles
+    .replace(/(^|[-\u2014/(\[{\u2018\s])"/g, '$1\u201c')
+    // closing doubles
+    .replace(/"/g, '\u201d')
+    // ellipses
+    .replace(/\.{3}/g, '\u2026');
+};
+
+/**
+ * Mangle Links
+ */
+
+InlineLexer.prototype.mangle = function(text) {
+  if (!this.options.mangle) return text;
+  var out = ''
+    , l = text.length
+    , i = 0
+    , ch;
+
+  for (; i < l; i++) {
+    ch = text.charCodeAt(i);
+    if (Math.random() > 0.5) {
+      ch = 'x' + ch.toString(16);
+    }
+    out += '&#' + ch + ';';
+  }
+
+  return out;
+};
+
+/**
+ * Renderer
+ */
+
+function Renderer(options) {
+  this.options = options || {};
+}
+
+Renderer.prototype.code = function(code, lang, escaped) {
+  if (this.options.highlight) {
+    var out = this.options.highlight(code, lang);
+    if (out != null && out !== code) {
+      escaped = true;
+      code = out;
+    }
+  }
+
+  if (!lang) {
+    return '<pre><code>'
+      + (escaped ? code : escape(code, true))
+      + '\n</code></pre>';
+  }
+
+  return '<pre><code class="'
+    + this.options.langPrefix
+    + escape(lang, true)
+    + '">'
+    + (escaped ? code : escape(code, true))
+    + '\n</code></pre>\n';
+};
+
+Renderer.prototype.blockquote = function(quote) {
+  return '<blockquote>\n' + quote + '</blockquote>\n';
+};
+
+Renderer.prototype.html = function(html) {
+  return html;
+};
+
+Renderer.prototype.heading = function(text, level, raw) {
+  return '<h'
+    + level
+    + ' id="'
+    + this.options.headerPrefix
+    + raw.toLowerCase().replace(/[^\w]+/g, '-')
+    + '">'
+    + text
+    + '</h'
+    + level
+    + '>\n';
+};
+
+Renderer.prototype.hr = function() {
+  return this.options.xhtml ? '<hr/>\n' : '<hr>\n';
+};
+
+Renderer.prototype.list = function(body, ordered) {
+  var type = ordered ? 'ol' : 'ul';
+  return '<' + type + '>\n' + body + '</' + type + '>\n';
+};
+
+Renderer.prototype.listitem = function(text) {
+  return '<li>' + text + '</li>\n';
+};
+
+Renderer.prototype.paragraph = function(text) {
+  return '<p>' + text + '</p>\n';
+};
+
+Renderer.prototype.table = function(header, body) {
+  return '<table>\n'
+    + '<thead>\n'
+    + header
+    + '</thead>\n'
+    + '<tbody>\n'
+    + body
+    + '</tbody>\n'
+    + '</table>\n';
+};
+
+Renderer.prototype.tablerow = function(content) {
+  return '<tr>\n' + content + '</tr>\n';
+};
+
+Renderer.prototype.tablecell = function(content, flags) {
+  var type = flags.header ? 'th' : 'td';
+  var tag = flags.align
+    ? '<' + type + ' style="text-align:' + flags.align + '">'
+    : '<' + type + '>';
+  return tag + content + '</' + type + '>\n';
+};
+
+// span level renderer
+Renderer.prototype.strong = function(text) {
+  return '<strong>' + text + '</strong>';
+};
+
+Renderer.prototype.em = function(text) {
+  return '<em>' + text + '</em>';
+};
+
+Renderer.prototype.codespan = function(text) {
+  return '<code>' + text + '</code>';
+};
+
+Renderer.prototype.br = function() {
+  return this.options.xhtml ? '<br/>' : '<br>';
+};
+
+Renderer.prototype.del = function(text) {
+  return '<del>' + text + '</del>';
+};
+
+Renderer.prototype.link = function(href, title, text) {
+  if (this.options.sanitize) {
+    try {
+      var prot = decodeURIComponent(unescape(href))
+        .replace(/[^\w:]/g, '')
+        .toLowerCase();
+    } catch (e) {
+      return '';
+    }
+    if (prot.indexOf('javascript:') === 0 || prot.indexOf('vbscript:') === 0 || prot.indexOf('data:') === 0) {
+      return '';
+    }
+  }
+  if (this.options.baseUrl && !originIndependentUrl.test(href)) {
+    href = resolveUrl(this.options.baseUrl, href);
+  }
+  var out = '<a href="' + href + '"';
+  if (title) {
+    out += ' title="' + title + '"';
+  }
+  out += '>' + text + '</a>';
+  return out;
+};
+
+Renderer.prototype.image = function(href, title, text) {
+  if (this.options.baseUrl && !originIndependentUrl.test(href)) {
+    href = resolveUrl(this.options.baseUrl, href);
+  }
+  var out = '<img src="' + href + '" alt="' + text + '"';
+  if (title) {
+    out += ' title="' + title + '"';
+  }
+  out += this.options.xhtml ? '/>' : '>';
+  return out;
+};
+
+Renderer.prototype.text = function(text) {
+  return text;
+};
+
+/**
+ * Parsing & Compiling
+ */
+
+function Parser(options) {
+  this.tokens = [];
+  this.token = null;
+  this.options = options || marked.defaults;
+  this.options.renderer = this.options.renderer || new Renderer;
+  this.renderer = this.options.renderer;
+  this.renderer.options = this.options;
+}
+
+/**
+ * Static Parse Method
+ */
+
+Parser.parse = function(src, options, renderer) {
+  var parser = new Parser(options, renderer);
+  return parser.parse(src);
+};
+
+/**
+ * Parse Loop
+ */
+
+Parser.prototype.parse = function(src) {
+  this.inline = new InlineLexer(src.links, this.options, this.renderer);
+  this.tokens = src.reverse();
+
+  var out = '';
+  while (this.next()) {
+    out += this.tok();
+  }
+
+  return out;
+};
+
+/**
+ * Next Token
+ */
+
+Parser.prototype.next = function() {
+  return this.token = this.tokens.pop();
+};
+
+/**
+ * Preview Next Token
+ */
+
+Parser.prototype.peek = function() {
+  return this.tokens[this.tokens.length - 1] || 0;
+};
+
+/**
+ * Parse Text Tokens
+ */
+
+Parser.prototype.parseText = function() {
+  var body = this.token.text;
+
+  while (this.peek().type === 'text') {
+    body += '\n' + this.next().text;
+  }
+
+  return this.inline.output(body);
+};
+
+/**
+ * Parse Current Token
+ */
+
+Parser.prototype.tok = function() {
+  switch (this.token.type) {
+    case 'space': {
+      return '';
+    }
+    case 'hr': {
+      return this.renderer.hr();
+    }
+    case 'heading': {
+      return this.renderer.heading(
+        this.inline.output(this.token.text),
+        this.token.depth,
+        this.token.text);
+    }
+    case 'code': {
+      return this.renderer.code(this.token.text,
+        this.token.lang,
+        this.token.escaped);
+    }
+    case 'table': {
+      var header = ''
+        , body = ''
+        , i
+        , row
+        , cell
+        , flags
+        , j;
+
+      // header
+      cell = '';
+      for (i = 0; i < this.token.header.length; i++) {
+        flags = { header: true, align: this.token.align[i] };
+        cell += this.renderer.tablecell(
+          this.inline.output(this.token.header[i]),
+          { header: true, align: this.token.align[i] }
+        );
+      }
+      header += this.renderer.tablerow(cell);
+
+      for (i = 0; i < this.token.cells.length; i++) {
+        row = this.token.cells[i];
+
+        cell = '';
+        for (j = 0; j < row.length; j++) {
+          cell += this.renderer.tablecell(
+            this.inline.output(row[j]),
+            { header: false, align: this.token.align[j] }
+          );
+        }
+
+        body += this.renderer.tablerow(cell);
+      }
+      return this.renderer.table(header, body);
+    }
+    case 'blockquote_start': {
+      var body = '';
+
+      while (this.next().type !== 'blockquote_end') {
+        body += this.tok();
+      }
+
+      return this.renderer.blockquote(body);
+    }
+    case 'list_start': {
+      var body = ''
+        , ordered = this.token.ordered;
+
+      while (this.next().type !== 'list_end') {
+        body += this.tok();
+      }
+
+      return this.renderer.list(body, ordered);
+    }
+    case 'list_item_start': {
+      var body = '';
+
+      while (this.next().type !== 'list_item_end') {
+        body += this.token.type === 'text'
+          ? this.parseText()
+          : this.tok();
+      }
+
+      return this.renderer.listitem(body);
+    }
+    case 'loose_item_start': {
+      var body = '';
+
+      while (this.next().type !== 'list_item_end') {
+        body += this.tok();
+      }
+
+      return this.renderer.listitem(body);
+    }
+    case 'html': {
+      var html = !this.token.pre && !this.options.pedantic
+        ? this.inline.output(this.token.text)
+        : this.token.text;
+      return this.renderer.html(html);
+    }
+    case 'paragraph': {
+      return this.renderer.paragraph(this.inline.output(this.token.text));
+    }
+    case 'text': {
+      return this.renderer.paragraph(this.parseText());
+    }
+  }
+};
+
+/**
+ * Helpers
+ */
+
+function escape(html, encode) {
+  return html
+    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function unescape(html) {
+	// explicitly match decimal, hex, and named HTML entities
+  return html.replace(/&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig, function(_, n) {
+    n = n.toLowerCase();
+    if (n === 'colon') return ':';
+    if (n.charAt(0) === '#') {
+      return n.charAt(1) === 'x'
+        ? String.fromCharCode(parseInt(n.substring(2), 16))
+        : String.fromCharCode(+n.substring(1));
+    }
+    return '';
+  });
+}
+
+function replace(regex, opt) {
+  regex = regex.source;
+  opt = opt || '';
+  return function self(name, val) {
+    if (!name) return new RegExp(regex, opt);
+    val = val.source || val;
+    val = val.replace(/(^|[^\[])\^/g, '$1');
+    regex = regex.replace(name, val);
+    return self;
+  };
+}
+
+function resolveUrl(base, href) {
+  if (!baseUrls[' ' + base]) {
+    // we can ignore everything in base after the last slash of its path component,
+    // but we might need to add _that_
+    // https://tools.ietf.org/html/rfc3986#section-3
+    if (/^[^:]+:\/*[^/]*$/.test(base)) {
+      baseUrls[' ' + base] = base + '/';
+    } else {
+      baseUrls[' ' + base] = base.replace(/[^/]*$/, '');
+    }
+  }
+  base = baseUrls[' ' + base];
+
+  if (href.slice(0, 2) === '//') {
+    return base.replace(/:[^]*/, ':') + href;
+  } else if (href.charAt(0) === '/') {
+    return base.replace(/(:\/*[^/]*)[^]*/, '$1') + href;
+  } else {
+    return base + href;
+  }
+}
+baseUrls = {};
+originIndependentUrl = /^$|^[a-z][a-z0-9+.-]*:|^[?#]/i;
+
+function noop() {}
+noop.exec = noop;
+
+function merge(obj) {
+  var i = 1
+    , target
+    , key;
+
+  for (; i < arguments.length; i++) {
+    target = arguments[i];
+    for (key in target) {
+      if (Object.prototype.hasOwnProperty.call(target, key)) {
+        obj[key] = target[key];
+      }
+    }
+  }
+
+  return obj;
+}
+
+
+/**
+ * Marked
+ */
+
+function marked(src, opt, callback) {
+  if (callback || typeof opt === 'function') {
+    if (!callback) {
+      callback = opt;
+      opt = null;
+    }
+
+    opt = merge({}, marked.defaults, opt || {});
+
+    var highlight = opt.highlight
+      , tokens
+      , pending
+      , i = 0;
+
+    try {
+      tokens = Lexer.lex(src, opt)
+    } catch (e) {
+      return callback(e);
+    }
+
+    pending = tokens.length;
+
+    var done = function(err) {
+      if (err) {
+        opt.highlight = highlight;
+        return callback(err);
+      }
+
+      var out;
+
+      try {
+        out = Parser.parse(tokens, opt);
+      } catch (e) {
+        err = e;
+      }
+
+      opt.highlight = highlight;
+
+      return err
+        ? callback(err)
+        : callback(null, out);
+    };
+
+    if (!highlight || highlight.length < 3) {
+      return done();
+    }
+
+    delete opt.highlight;
+
+    if (!pending) return done();
+
+    for (; i < tokens.length; i++) {
+      (function(token) {
+        if (token.type !== 'code') {
+          return --pending || done();
+        }
+        return highlight(token.text, token.lang, function(err, code) {
+          if (err) return done(err);
+          if (code == null || code === token.text) {
+            return --pending || done();
+          }
+          token.text = code;
+          token.escaped = true;
+          --pending || done();
+        });
+      })(tokens[i]);
+    }
+
+    return;
+  }
+  try {
+    if (opt) opt = merge({}, marked.defaults, opt);
+    return Parser.parse(Lexer.lex(src, opt), opt);
+  } catch (e) {
+    e.message += '\nPlease report this to https://github.com/chjj/marked.';
+    if ((opt || marked.defaults).silent) {
+      return '<p>An error occured:</p><pre>'
+        + escape(e.message + '', true)
+        + '</pre>';
+    }
+    throw e;
+  }
+}
+
+/**
+ * Options
+ */
+
+marked.options =
+marked.setOptions = function(opt) {
+  merge(marked.defaults, opt);
+  return marked;
+};
+
+marked.defaults = {
+  gfm: true,
+  tables: true,
+  breaks: false,
+  pedantic: false,
+  sanitize: false,
+  sanitizer: null,
+  mangle: true,
+  smartLists: false,
+  silent: false,
+  highlight: null,
+  langPrefix: 'lang-',
+  smartypants: false,
+  headerPrefix: '',
+  renderer: new Renderer,
+  xhtml: false,
+  baseUrl: null
+};
+
+/**
+ * Expose
+ */
+
+marked.Parser = Parser;
+marked.parser = Parser.parse;
+
+marked.Renderer = Renderer;
+
+marked.Lexer = Lexer;
+marked.lexer = Lexer.lex;
+
+marked.InlineLexer = InlineLexer;
+marked.inlineLexer = InlineLexer.output;
+
+marked.parse = marked;
+
+if (true) {
+  module.exports = marked;
+} else if (typeof define === 'function' && define.amd) {
+  define(function() { return marked; });
+} else {
+  this.marked = marked;
+}
+
+}).call(function() {
+  return this || (typeof window !== 'undefined' ? window : global);
+}());
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+
+const moduleList = [
+  __webpack_require__(15),
+  __webpack_require__(19),
+  __webpack_require__(22), // 15
+  __webpack_require__(25),
+  __webpack_require__(27),
+  __webpack_require__(29),
+  __webpack_require__(30),
+  __webpack_require__(31), // 10
+  __webpack_require__(32),
+  __webpack_require__(33),
+  __webpack_require__(34),
+  __webpack_require__(35),
+  __webpack_require__(36), // 5
+  __webpack_require__(37),
+  __webpack_require__(38),
+  __webpack_require__(39),
+  __webpack_require__(40), // 1
+  __webpack_require__(41),
+];
+
+module.exports = moduleList;
+
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(__filename) {const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
-const positionShaderCode = __webpack_require__(14);
-const velocityShaderCode = __webpack_require__(15);
+const positionShaderCode = __webpack_require__(16);
+const velocityShaderCode = __webpack_require__(17);
 const ComputeShaderRunner = __webpack_require__(2);
 
 function pointsBufferGeometry(textureWidth) {
@@ -48079,35 +49485,46 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Dot Physics 
+Compute shaders and dots. Bounding box
+rebounds collisions and changes velocities now.
+Not as cool as the less real
+one before this.
+`;
+
 module.exports = main;
 
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   vec4 nextP = p + (v * frameTimeSec);\n   float boxSize = 1.0;\n   if(nextP.y < -1.2){\n     nextP.y = -1.19;\n   }\n   else if(nextP.x < -boxSize){\n     nextP.x = -boxSize + 0.01;\n   }\n   else if (nextP.x > boxSize){\n     nextP.x = boxSize - 0.01;\n   }\n   else if(nextP.z < -boxSize){\n     nextP.z = boxSize + 0.01;\n   }\n   else if(nextP.z > boxSize){\n     nextP.z = boxSize - 0.01;\n   }\n   gl_FragColor = nextP;\n}\n"
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports) {
-
-module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   float bounceFactor = 0.2;\n   float floorY = -1.2;\n   float boxSize = 1.0;\n   vec4 nextP = p + (v * frameTimeSec);\n\n   /* Gravity */\n   v.y += -4.0 * frameTimeSec;\n\n   if(nextP.y < -1.2){\n     v.y = -v.y * bounceFactor;\n   }\n   if(nextP.x < -boxSize || nextP.x > boxSize){\n     v.x = -v.x * bounceFactor;\n   }\n   if(nextP.z < -boxSize || nextP.z > boxSize){\n     v.z = -v.z * bounceFactor;\n   }\n\n   /* pull to middle at bottom push at top, a little more at bottom */\n   float pullFactor = min(p.y * 14.0, p.y * 6.0);\n   v.xz += (normalize(p.xz) * pullFactor * frameTimeSec);\n\n   /* Anti gravity in center. */\n   v.y += max(0.0, (0.2 - length(p.xz)) * 42.0 * frameTimeSec);\n\n   /* Decay */\n   v.xyz *= 1.0 - (0.6 * frameTimeSec);\n\n\n   gl_FragColor = v;\n}\n"
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20180101-1/script.js"))
 
 /***/ }),
 /* 16 */
 /***/ (function(module, exports) {
 
-module.exports = "\nvoid main() {\n  gl_Position = vec4( position, 1.0 );\n}\n"
+module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   vec4 nextP = p + (v * frameTimeSec);\n   float boxSize = 1.0;\n   if(nextP.y < -1.2){\n     nextP.y = -1.19;\n   }\n   else if(nextP.x < -boxSize){\n     nextP.x = -boxSize + 0.01;\n   }\n   else if (nextP.x > boxSize){\n     nextP.x = boxSize - 0.01;\n   }\n   else if(nextP.z < -boxSize){\n     nextP.z = boxSize + 0.01;\n   }\n   else if(nextP.z > boxSize){\n     nextP.z = boxSize - 0.01;\n   }\n   gl_FragColor = nextP;\n}\n"
 
 /***/ }),
 /* 17 */
+/***/ (function(module, exports) {
+
+module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   float bounceFactor = 0.2;\n   float floorY = -1.2;\n   float boxSize = 1.0;\n   vec4 nextP = p + (v * frameTimeSec);\n\n   /* Gravity */\n   v.y += -4.0 * frameTimeSec;\n\n   if(nextP.y < -1.2){\n     v.y = -v.y * bounceFactor;\n   }\n   if(nextP.x < -boxSize || nextP.x > boxSize){\n     v.x = -v.x * bounceFactor;\n   }\n   if(nextP.z < -boxSize || nextP.z > boxSize){\n     v.z = -v.z * bounceFactor;\n   }\n\n   /* pull to middle at bottom push at top, a little more at bottom */\n   float pullFactor = min(p.y * 14.0, p.y * 6.0);\n   v.xz += (normalize(p.xz) * pullFactor * frameTimeSec);\n\n   /* Anti gravity in center. */\n   v.y += max(0.0, (0.2 - length(p.xz)) * 42.0 * frameTimeSec);\n\n   /* Decay */\n   v.xyz *= 1.0 - (0.6 * frameTimeSec);\n\n\n   gl_FragColor = v;\n}\n"
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = "\nvoid main() {\n  gl_Position = vec4( position, 1.0 );\n}\n"
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const THREE = __webpack_require__(0);
+/* WEBPACK VAR INJECTION */(function(__filename) {const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
-const positionShaderCode = __webpack_require__(18);
-const velocityShaderCode = __webpack_require__(19);
+const positionShaderCode = __webpack_require__(20);
+const velocityShaderCode = __webpack_require__(21);
 const ComputeShaderRunner = __webpack_require__(2);
 
 function pointsBufferGeometry(textureWidth) {
@@ -48239,29 +49656,39 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Fountain
+Compute shaders. Modeled gravity, suction, attraction to origin at bottom
+turning to repulsion from at top, and a small amount of drag. Positions
+clamped to bounding box.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171229-1/script.js"))
 
 /***/ }),
-/* 18 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   p = p + (v * frameTimeSec);\n   /* Until the ground. */\n   if(p.y < -1.2){\n     p.y = -1.2;\n   }\n   if(p.x < -1.2){\n     p.x = -1.2;\n   }\n   if(p.x > 1.2){\n     p.x = 1.2;\n   }\n   if(p.z < -1.2){\n     p.z = -1.2;\n   }\n   if(p.z > 1.2){\n     p.z = 1.2;\n   }\n   gl_FragColor = p;\n}\n"
 
 /***/ }),
-/* 19 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = "uniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n\n   /* Gravity */\n   // v.y += -4.9 * frameTimeSec;\n\n   /* pull to middle at bottom push at top */\n   v.xz += (normalize(p.xz * p.y) * 3.0 * frameTimeSec);\n\n   /* Anti gravity in center. */\n   v.y += cos(length(p.xz) * 2.0) * frameTimeSec;\n\n   /* Decay */\n   v.xyz *= 1.0 - (0.6 * frameTimeSec);\n\n   gl_FragColor = v;\n}\n"
 
 /***/ }),
-/* 20 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const THREE = __webpack_require__(0);
+/* WEBPACK VAR INJECTION */(function(__filename) {const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
-const positionShaderCode = __webpack_require__(21);
-const velocityShaderCode = __webpack_require__(22);
+const positionShaderCode = __webpack_require__(23);
+const velocityShaderCode = __webpack_require__(24);
 const ComputeShaderRunner = __webpack_require__(2);
 
 function pointsBufferGeometry(textureWidth) {
@@ -48393,29 +49820,38 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Purple Gravity Snow
+Dots snow, gravity, and reference object.
+ComputeShaderRunner, compute shaders. Two, one for velocities and one for positions.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171218-1/script.js"))
 
 /***/ }),
-/* 21 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   p.y += v.y * frameTimeSec;\n   /* Until the ground. */\n   if(p.y < -1.2){\n     p.y = -1.2;\n   }\n   gl_FragColor = p;\n}\n"
 
 /***/ }),
-/* 22 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 p = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   v.y += -0.8 * frameTimeSec;\n   gl_FragColor = v;\n}\n"
 
 /***/ }),
-/* 23 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas } = __webpack_require__(1);
-const fragmentShaderCode = __webpack_require__(24);
+const fragmentShaderCode = __webpack_require__(26);
 
 const ComputeShaderRunner = __webpack_require__(2);
 
@@ -48511,20 +49947,29 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Slow-mo Pink Snow
+Dots moving down. Reference object.
+First use of ComputeShaderRunner.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171217-1/script.js"))
 
 /***/ }),
-/* 24 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D positionTexture;\nuniform sampler2D velocityTexture;\nuniform float frameTimeSec;\n\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 t = texture2D( positionTexture, uv );\n   vec4 v = texture2D( velocityTexture, uv );\n   t += v * frameTimeSec;\n   /* Until the ground. */\n   if(t.y < -1.2){\n     t.y = -1.2;\n   }\n   gl_FragColor = t;\n}\n"
 
 /***/ }),
-/* 25 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { cubeFrame, initRenderCanvas, computeTextureSupportCheck } = __webpack_require__(1);
 
@@ -48532,7 +49977,7 @@ function makeComputeShaderMaterial(textureWidth){
   var passThruUniforms = {
     texture: { value: null }
   };
-  const computeFragmentShader = __webpack_require__(26);
+  const computeFragmentShader = __webpack_require__(28);
   const passThroughVertexShader = "void main() { gl_Position = vec4( position, 1.0 ); }\n";
   const shaderMaterial = new THREE.ShaderMaterial({
     uniforms: passThruUniforms,
@@ -48654,20 +50099,30 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Green Snow
+Dots moving downwards, positions clamped to a floor. Reference object.
+Compute shader moves points,
+Super basic THREE.ShaderMaterial.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171215-1/script.js"))
 
 /***/ }),
-/* 26 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = "\nuniform sampler2D texture;\nvoid main() {\n   vec2 uv = gl_FragCoord.xy / resolution.xy;\n   vec4 t = texture2D( texture, uv );\n   /* Fall down. */\n   t.y -= 0.02;\n   /* Until the ground. */\n   if(t.y < -1.2){\n     t.y = -1.2;\n   }\n   gl_FragColor = t;\n}\n"
 
 /***/ }),
-/* 27 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -48742,18 +50197,26 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Geometry Practice
+SphereGeometry, with generated geometry points.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171214-1/script.js"))
 
 /***/ }),
-/* 28 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
-const TextHelper = __webpack_require__(3);
-const OrbitControls = __webpack_require__(4);
+const TextHelper = __webpack_require__(4);
+const OrbitControls = __webpack_require__(5);
 
 function handleResize(camera) {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -48779,7 +50242,7 @@ function main(rootEl, [w,h]) {
   var messageText = 'fu';
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, false, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
@@ -48818,14 +50281,11 @@ function main(rootEl, [w,h]) {
   scene.add( lineText );
 
   document.addEventListener('keydown', (event) => {
-    if(event.key == 'f'){
+    if(event.key == 'u'){
       messageText += 'u';
     }
-    else if(event.key == 'g'){
+    else if(event.key == 'c'){
       messageText += 'z';
-    }
-    else if(event.key == 'h'){
-      console.log('h', controls, camera);
     }
     return false;
   });
@@ -48844,18 +50304,27 @@ function main(rootEl, [w,h]) {
   return render;
 }
 
+main.src = __filename;
+
+main.description = `
+## Fu...
+Type, one light, a surprise.
+Press and hold *u* then *c* to type.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171208-1/script.js"))
 
 /***/ }),
-/* 29 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
-const TextHelper = __webpack_require__(3);
-const OrbitControls = __webpack_require__(4);
+const TextHelper = __webpack_require__(4);
+const OrbitControls = __webpack_require__(5);
 
 function handleResize(camera) {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -48885,7 +50354,7 @@ function main(rootEl, [w,h]) {
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, false, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
@@ -48933,18 +50402,26 @@ function main(rootEl, [w,h]) {
   return render;
 }
 
+main.src = __filename;
+
+main.description = `
+## Date and Time
+Type, gold material, single light source. Made TextHelper, refactored last one with it.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171207-1/script.js"))
 
 /***/ }),
-/* 30 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
-const TextHelper = __webpack_require__(3);
-const OrbitControls = __webpack_require__(4);
+const TextHelper = __webpack_require__(4);
+const OrbitControls = __webpack_require__(5);
 
 function handleResize(camera) {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -48969,7 +50446,7 @@ function main(rootEl, [w,h]) {
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, false, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
@@ -49018,17 +50495,23 @@ function main(rootEl, [w,h]) {
   return render;
 }
 
+main.src = __filename;
 
-
+main.description = `
+## Date
+Type, gold material, single light source. Rendering text is complicated,
+shapes, holes. TextHelper.
+`;
 
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171206-1/script.js"))
 
 /***/ }),
-/* 31 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49126,14 +50609,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Gravity Bounce
+Dots, gravitational acceleration, dampened bounce.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171202-3/script.js"))
 
 /***/ }),
-/* 32 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49180,14 +50671,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Dot Space
+SphereGeometry x 2. Color material. Just practice.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171202-2/script.js"))
 
 /***/ }),
-/* 33 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49263,14 +50762,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Foreboding Dark Sphere
+Three differently colored light sources. Drawing the normals myself this time!
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171202-1/script.js"))
 
 /***/ }),
-/* 34 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49328,14 +50835,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## More Gold Sphere
+Clipping, depth, drawing multiple objects, lines.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171201-2/script.js"))
 
 /***/ }),
-/* 35 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49380,14 +50895,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Gold Sphere
+Phong shading and 3 white light sources.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171201-1/script.js"))
 
 /***/ }),
-/* 36 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49433,14 +50956,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Lumpy Sphere
+Little spines are from FaceNormalsHelper. Lighting from 3 sources.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171129-1/script.js"))
 
 /***/ }),
-/* 37 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49481,14 +51012,22 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Textured Cube
+In Berlin! Learning texturing.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171128-2/script.js"))
 
 /***/ }),
-/* 38 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
 const { initRenderCanvas } = __webpack_require__(1);
 
@@ -49530,16 +51069,24 @@ function main(rootEl) {
   return animate;
 }
 
+main.src = __filename;
+
+main.description = `
+## Red Cube
+Hello world! Lighting from 3 sources.
+`;
+
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/20171128-1/script.js"))
 
 /***/ }),
-/* 39 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
+/* WEBPACK VAR INJECTION */(function(__filename) {
 const THREE = __webpack_require__(0);
-const { initRenderCanvas, htmlMessage } = __webpack_require__(1);
+const { initRenderCanvas } = __webpack_require__(1);
 
 function main(rootEl) {
   const [w, h, renderer] = initRenderCanvas(rootEl);
@@ -49575,21 +51122,2896 @@ function main(rootEl) {
   mesh.rotation.y += 1.1;
   /* No animate(), single frame render */
   renderer.render( scene, camera );
-  htmlMessage(rootEl, 'Stopped');
+  return () => {};
 }
 
+main.src = __filename;
+main.description = 'The End.';
 
 module.exports = main;
 
+/* WEBPACK VAR INJECTION */}.call(exports, "src/stopped.js"))
 
 /***/ }),
-/* 40 */
+/* 42 */
+/***/ (function(module, exports) {
+
+
+function routeNameFromLocation(location){
+  const hash = location.hash;
+  // Remove the '#'
+  const routeName = hash.substring(1);
+  const routeIndex = parseInt(routeName);
+  return routeIndex;
+}
+
+function getLocationModuleIndex(moduleList){
+  const routeName = routeNameFromLocation(document.location);
+  const routeIndex = parseInt(routeName);
+  if((routeIndex >= 0) && (routeIndex < (moduleList.length + 1))){
+    const moduleListIndex = moduleList.length - routeIndex - 1;
+    return moduleListIndex;
+  }
+  throw new Error(`Couldn't find route "${routeName}"`);
+}
+
+function routeListenAndInit(moduleList, routeFn){
+  function gotoLocation(){
+    let routeIndex = 0;
+    try {
+      routeIndex = getLocationModuleIndex(moduleList);
+    } catch(err) {
+      console.error('err get location', err);
+    }
+    routeFn(routeIndex);
+  }
+  window.onpopstate = gotoLocation;
+  gotoLocation();
+}
+
+module.exports = { routeListenAndInit, routeNameFromLocation, getLocationModuleIndex };
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*Copyrights for code authored by Yahoo Inc. is licensed under the following terms:
+MIT License
+Copyright  2017 Yahoo Inc.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+;(function(window, document, navigator, undefined) {
+"use strict";
+
+/*
+  utils.js
+  ========
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+var utils = {
+    URL: window.URL || window.webkitURL || window.mozURL || window.msURL,
+    getUserMedia: function () {
+        var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+        return getUserMedia ? getUserMedia.bind(navigator) : getUserMedia;
+    }(),
+    requestAnimFrame: window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame,
+    requestTimeout: function requestTimeout(callback, delay) {
+        callback = callback || utils.noop;
+        delay = delay || 0;
+
+        if (!utils.requestAnimFrame) {
+            return setTimeout(callback, delay);
+        }
+
+        var start = new Date().getTime();
+        var handle = new Object();
+        var requestAnimFrame = utils.requestAnimFrame;
+
+        var loop = function loop() {
+            var current = new Date().getTime();
+            var delta = current - start;
+
+            delta >= delay ? callback.call() : handle.value = requestAnimFrame(loop);
+        };
+
+        handle.value = requestAnimFrame(loop);
+
+        return handle;
+    },
+    Blob: window.Blob || window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder,
+    btoa: function () {
+        var btoa = window.btoa || function (input) {
+            var output = '';
+            var i = 0;
+            var l = input.length;
+            var key = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+            var chr1 = void 0;
+            var chr2 = void 0;
+            var chr3 = void 0;
+            var enc1 = void 0;
+            var enc2 = void 0;
+            var enc3 = void 0;
+            var enc4 = void 0;
+
+            while (i < l) {
+                chr1 = input.charCodeAt(i++);
+                chr2 = input.charCodeAt(i++);
+                chr3 = input.charCodeAt(i++);
+                enc1 = chr1 >> 2;
+                enc2 = (chr1 & 3) << 4 | chr2 >> 4;
+                enc3 = (chr2 & 15) << 2 | chr3 >> 6;
+                enc4 = chr3 & 63;
+
+                if (isNaN(chr2)) {
+                    enc3 = enc4 = 64;
+                } else if (isNaN(chr3)) {
+                    enc4 = 64;
+                }
+
+                output = output + key.charAt(enc1) + key.charAt(enc2) + key.charAt(enc3) + key.charAt(enc4);
+            }
+
+            return output;
+        };
+
+        return btoa ? btoa.bind(window) : utils.noop;
+    }(),
+    isObject: function isObject(obj) {
+        return obj && Object.prototype.toString.call(obj) === '[object Object]';
+    },
+    isEmptyObject: function isEmptyObject(obj) {
+        return utils.isObject(obj) && !Object.keys(obj).length;
+    },
+    isArray: function isArray(arr) {
+        return arr && Array.isArray(arr);
+    },
+    isFunction: function isFunction(func) {
+        return func && typeof func === 'function';
+    },
+    isElement: function isElement(elem) {
+        return elem && elem.nodeType === 1;
+    },
+    isString: function isString(value) {
+        return typeof value === 'string' || Object.prototype.toString.call(value) === '[object String]';
+    },
+    isSupported: {
+        canvas: function canvas() {
+            var el = document.createElement('canvas');
+
+            return el && el.getContext && el.getContext('2d');
+        },
+        webworkers: function webworkers() {
+            return window.Worker;
+        },
+        blob: function blob() {
+            return utils.Blob;
+        },
+        Uint8Array: function Uint8Array() {
+            return window.Uint8Array;
+        },
+        Uint32Array: function Uint32Array() {
+            return window.Uint32Array;
+        },
+        videoCodecs: function () {
+            var testEl = document.createElement('video');
+            var supportObj = {
+                'mp4': false,
+                'h264': false,
+                'ogv': false,
+                'ogg': false,
+                'webm': false
+            };
+
+            try {
+                if (testEl && testEl.canPlayType) {
+                    // Check for MPEG-4 support
+                    supportObj.mp4 = testEl.canPlayType('video/mp4; codecs="mp4v.20.8"') !== '';
+
+                    // Check for h264 support
+                    supportObj.h264 = (testEl.canPlayType('video/mp4; codecs="avc1.42E01E"') || testEl.canPlayType('video/mp4; codecs="avc1.42E01E, mp4a.40.2"')) !== '';
+
+                    // Check for Ogv support
+                    supportObj.ogv = testEl.canPlayType('video/ogg; codecs="theora"') !== '';
+
+                    // Check for Ogg support
+                    supportObj.ogg = testEl.canPlayType('video/ogg; codecs="theora"') !== '';
+
+                    // Check for Webm support
+                    supportObj.webm = testEl.canPlayType('video/webm; codecs="vp8, vorbis"') !== -1;
+                }
+            } catch (e) {}
+
+            return supportObj;
+        }()
+    },
+    noop: function noop() {},
+    each: function each(collection, callback) {
+        var x = void 0;
+        var len = void 0;
+
+        if (utils.isArray(collection)) {
+            x = -1;
+            len = collection.length;
+
+            while (++x < len) {
+                if (callback(x, collection[x]) === false) {
+                    break;
+                }
+            }
+        } else if (utils.isObject(collection)) {
+            for (x in collection) {
+                if (collection.hasOwnProperty(x)) {
+                    if (callback(x, collection[x]) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+    },
+    mergeOptions: function mergeOptions(defaultOptions, userOptions) {
+        if (!utils.isObject(defaultOptions) || !utils.isObject(userOptions) || !Object.keys) {
+            return;
+        }
+
+        var newObj = {};
+
+        utils.each(defaultOptions, function (key, val) {
+            newObj[key] = defaultOptions[key];
+        });
+
+        utils.each(userOptions, function (key, val) {
+            var currentUserOption = userOptions[key];
+
+            if (!utils.isObject(currentUserOption)) {
+                newObj[key] = currentUserOption;
+            } else {
+                if (!defaultOptions[key]) {
+                    newObj[key] = currentUserOption;
+                } else {
+                    newObj[key] = utils.mergeOptions(defaultOptions[key], currentUserOption);
+                }
+            }
+        });
+
+        return newObj;
+    },
+    setCSSAttr: function setCSSAttr(elem, attr, val) {
+        if (!utils.isElement(elem)) {
+            return;
+        }
+
+        if (utils.isString(attr) && utils.isString(val)) {
+            elem.style[attr] = val;
+        } else if (utils.isObject(attr)) {
+            utils.each(attr, function (key, val) {
+                elem.style[key] = val;
+            });
+        }
+    },
+    removeElement: function removeElement(node) {
+        if (!utils.isElement(node)) {
+            return;
+        }
+        if (node.parentNode) {
+            node.parentNode.removeChild(node);
+        }
+    },
+    createWebWorker: function createWebWorker(content) {
+        if (!utils.isString(content)) {
+            return {};
+        }
+
+        try {
+            var blob = new utils.Blob([content], {
+                'type': 'text/javascript'
+            });
+            var objectUrl = utils.URL.createObjectURL(blob);
+            var worker = new Worker(objectUrl);
+
+            return {
+                'objectUrl': objectUrl,
+                'worker': worker
+            };
+        } catch (e) {
+            return '' + e;
+        }
+    },
+    getExtension: function getExtension(src) {
+        return src.substr(src.lastIndexOf('.') + 1, src.length);
+    },
+    getFontSize: function getFontSize() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        if (!document.body || options.resizeFont === false) {
+            return options.fontSize;
+        }
+
+        var text = options.text;
+        var containerWidth = options.gifWidth;
+        var fontSize = parseInt(options.fontSize, 10);
+        var minFontSize = parseInt(options.minFontSize, 10);
+        var div = document.createElement('div');
+        var span = document.createElement('span');
+
+        div.setAttribute('width', containerWidth);
+        div.appendChild(span);
+
+        span.innerHTML = text;
+        span.style.fontSize = fontSize + 'px';
+        span.style.textIndent = '-9999px';
+        span.style.visibility = 'hidden';
+
+        document.body.appendChild(span);
+
+        while (span.offsetWidth > containerWidth && fontSize >= minFontSize) {
+            span.style.fontSize = --fontSize + 'px';
+        }
+
+        document.body.removeChild(span);
+
+        return fontSize + 'px';
+    },
+    webWorkerError: false
+};
+
+
+
+var utils$2 = Object.freeze({
+	default: utils
+});
+
+/*
+  error.js
+  ========
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+var error = {
+    validate: function validate(skipObj) {
+        skipObj = utils.isObject(skipObj) ? skipObj : {};
+
+        var errorObj = {};
+
+        utils.each(error.validators, function (indece, currentValidator) {
+            var errorCode = currentValidator.errorCode;
+
+            if (!skipObj[errorCode] && !currentValidator.condition) {
+                errorObj = currentValidator;
+                errorObj.error = true;
+
+                return false;
+            }
+        });
+
+        delete errorObj.condition;
+
+        return errorObj;
+    },
+    isValid: function isValid(skipObj) {
+        var errorObj = error.validate(skipObj);
+        var isValid = errorObj.error !== true ? true : false;
+
+        return isValid;
+    },
+    validators: [{
+        condition: utils.isFunction(utils.getUserMedia),
+        errorCode: 'getUserMedia',
+        errorMsg: 'The getUserMedia API is not supported in your browser'
+    }, {
+        condition: utils.isSupported.canvas(),
+        errorCode: 'canvas',
+        errorMsg: 'Canvas elements are not supported in your browser'
+    }, {
+        condition: utils.isSupported.webworkers(),
+        errorCode: 'webworkers',
+        errorMsg: 'The Web Workers API is not supported in your browser'
+    }, {
+        condition: utils.isFunction(utils.URL),
+        errorCode: 'window.URL',
+        errorMsg: 'The window.URL API is not supported in your browser'
+    }, {
+        condition: utils.isSupported.blob(),
+        errorCode: 'window.Blob',
+        errorMsg: 'The window.Blob File API is not supported in your browser'
+    }, {
+        condition: utils.isSupported.Uint8Array(),
+        errorCode: 'window.Uint8Array',
+        errorMsg: 'The window.Uint8Array function constructor is not supported in your browser'
+    }, {
+        condition: utils.isSupported.Uint32Array(),
+        errorCode: 'window.Uint32Array',
+        errorMsg: 'The window.Uint32Array function constructor is not supported in your browser'
+    }],
+    messages: {
+        videoCodecs: {
+            errorCode: 'videocodec',
+            errorMsg: 'The video codec you are trying to use is not supported in your browser'
+        }
+    }
+};
+
+
+
+var error$2 = Object.freeze({
+	default: error
+});
+
+/*
+  defaultOptions.js
+  =================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Helpers
+var noop = function noop() {};
+
+var defaultOptions = {
+    sampleInterval: 10,
+    numWorkers: 2,
+    filter: '',
+    gifWidth: 200,
+    gifHeight: 200,
+    interval: 0.1,
+    numFrames: 10,
+    frameDuration: 1,
+    keepCameraOn: false,
+    images: [],
+    video: null,
+    webcamVideoElement: null,
+    cameraStream: null,
+    text: '',
+    fontWeight: 'normal',
+    fontSize: '16px',
+    minFontSize: '10px',
+    resizeFont: false,
+    fontFamily: 'sans-serif',
+    fontColor: '#ffffff',
+    textAlign: 'center',
+    textBaseline: 'bottom',
+    textXCoordinate: null,
+    textYCoordinate: null,
+    progressCallback: noop,
+    completeCallback: noop,
+    saveRenderingContexts: false,
+    savedRenderingContexts: [],
+    crossOrigin: 'Anonymous'
+};
+
+
+
+var defaultOptions$2 = Object.freeze({
+	default: defaultOptions
+});
+
+/*
+  isSupported.js
+  ==============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function isSupported() {
+  return error.isValid();
+}
+
+/*
+  isWebCamGIFSupported.js
+  =======================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+function isWebCamGIFSupported() {
+  return error.isValid();
+}
+
+/*
+  isSupported.js
+  ==============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function isSupported$1() {
+    var options = {
+        getUserMedia: true
+    };
+
+    return error.isValid(options);
+}
+
+/*
+  isExistingVideoGIFSupported.js
+  ==============================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function isExistingVideoGIFSupported(codecs) {
+    var hasValidCodec = false;
+
+    if (utils.isArray(codecs) && codecs.length) {
+        utils.each(codecs, function (indece, currentCodec) {
+            if (utils.isSupported.videoCodecs[currentCodec]) {
+                hasValidCodec = true;
+            }
+        });
+
+        if (!hasValidCodec) {
+            return false;
+        }
+    } else if (utils.isString(codecs) && codecs.length) {
+        if (!utils.isSupported.videoCodecs[codecs]) {
+            return false;
+        }
+    }
+
+    return error.isValid({
+        'getUserMedia': true
+    });
+}
+
+/*
+  NeuQuant.js
+  ===========
+*/
+
+/*
+ * NeuQuant Neural-Net Quantization Algorithm
+ * ------------------------------------------
+ *
+ * Copyright (c) 1994 Anthony Dekker
+ *
+ * NEUQUANT Neural-Net quantization algorithm by Anthony Dekker, 1994. See
+ * "Kohonen neural networks for optimal colour quantization" in "Network:
+ * Computation in Neural Systems" Vol. 5 (1994) pp 351-367. for a discussion of
+ * the algorithm.
+ *
+ * Any party obtaining a copy of these files from the author, directly or
+ * indirectly, is granted, free of charge, a full and unrestricted irrevocable,
+ * world-wide, paid up, royalty-free, nonexclusive right and license to deal in
+ * this software and documentation files (the "Software"), including without
+ * limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons who
+ * receive copies from any such party to do so, with the only requirement being
+ * that this copyright notice remain intact.
+ */
+
+/*
+ * This class handles Neural-Net quantization algorithm
+ * @author Kevin Weiner (original Java version - kweiner@fmsware.com)
+ * @author Thibault Imbert (AS3 version - bytearray.org)
+ * @version 0.1 AS3 implementation
+ * @version 0.2 JS->AS3 "translation" by antimatter15
+ * @version 0.3 JS clean up + using modern JS idioms by sole - http://soledadpenades.com
+ * Also implement fix in color conversion described at http://stackoverflow.com/questions/16371712/neuquant-js-javascript-color-quantization-hidden-bug-in-js-conversion
+ */
+
+function NeuQuant() {
+  var netsize = 256; // number of colours used
+
+  // four primes near 500 - assume no image has a length so large
+  // that it is divisible by all four primes
+  var prime1 = 499;
+  var prime2 = 491;
+  var prime3 = 487;
+  var prime4 = 503;
+
+  // minimum size for input image
+  var minpicturebytes = 3 * prime4;
+
+  // Network Definitions
+
+  var maxnetpos = netsize - 1;
+  var netbiasshift = 4; // bias for colour values
+  var ncycles = 100; // no. of learning cycles
+
+  // defs for freq and bias
+  var intbiasshift = 16; // bias for fractions
+  var intbias = 1 << intbiasshift;
+  var gammashift = 10; // gamma = 1024
+  var gamma = 1 << gammashift;
+  var betashift = 10;
+  var beta = intbias >> betashift; // beta = 1/1024
+  var betagamma = intbias << gammashift - betashift;
+
+  // defs for decreasing radius factor
+  // For 256 colors, radius starts at 32.0 biased by 6 bits
+  // and decreases by a factor of 1/30 each cycle
+  var initrad = netsize >> 3;
+  var radiusbiasshift = 6;
+  var radiusbias = 1 << radiusbiasshift;
+  var initradius = initrad * radiusbias;
+  var radiusdec = 30;
+
+  // defs for decreasing alpha factor
+  // Alpha starts at 1.0 biased by 10 bits
+  var alphabiasshift = 10;
+  var initalpha = 1 << alphabiasshift;
+  var alphadec;
+
+  // radbias and alpharadbias used for radpower calculation
+  var radbiasshift = 8;
+  var radbias = 1 << radbiasshift;
+  var alpharadbshift = alphabiasshift + radbiasshift;
+  var alpharadbias = 1 << alpharadbshift;
+
+  // Input image
+  var thepicture;
+  // Height * Width * 3
+  var lengthcount;
+  // Sampling factor 1..30
+  var samplefac;
+
+  // The network itself
+  var network;
+  var netindex = [];
+
+  // for network lookup - really 256
+  var bias = [];
+
+  // bias and freq arrays for learning
+  var freq = [];
+  var radpower = [];
+
+  function NeuQuantConstructor(thepic, len, sample) {
+
+    var i;
+    var p;
+
+    thepicture = thepic;
+    lengthcount = len;
+    samplefac = sample;
+
+    network = new Array(netsize);
+
+    for (i = 0; i < netsize; i++) {
+      network[i] = new Array(4);
+      p = network[i];
+      p[0] = p[1] = p[2] = (i << netbiasshift + 8) / netsize | 0;
+      freq[i] = intbias / netsize | 0; // 1 / netsize
+      bias[i] = 0;
+    }
+  }
+
+  function colorMap() {
+    var map = [];
+    var index = new Array(netsize);
+    for (var i = 0; i < netsize; i++) {
+      index[network[i][3]] = i;
+    }var k = 0;
+    for (var l = 0; l < netsize; l++) {
+      var j = index[l];
+      map[k++] = network[j][0];
+      map[k++] = network[j][1];
+      map[k++] = network[j][2];
+    }
+    return map;
+  }
+
+  // Insertion sort of network and building of netindex[0..255]
+  // (to do after unbias)
+  function inxbuild() {
+    var i;
+    var j;
+    var smallpos;
+    var smallval;
+    var p;
+    var q;
+    var previouscol;
+    var startpos;
+
+    previouscol = 0;
+    startpos = 0;
+
+    for (i = 0; i < netsize; i++) {
+
+      p = network[i];
+      smallpos = i;
+      smallval = p[1]; // index on g
+      // find smallest in i..netsize-1
+      for (j = i + 1; j < netsize; j++) {
+
+        q = network[j];
+
+        if (q[1] < smallval) {
+          // index on g
+          smallpos = j;
+          smallval = q[1]; // index on g
+        }
+      }
+
+      q = network[smallpos];
+
+      // swap p (i) and q (smallpos) entries
+      if (i != smallpos) {
+        j = q[0];
+        q[0] = p[0];
+        p[0] = j;
+        j = q[1];
+        q[1] = p[1];
+        p[1] = j;
+        j = q[2];
+        q[2] = p[2];
+        p[2] = j;
+        j = q[3];
+        q[3] = p[3];
+        p[3] = j;
+      }
+
+      // smallval entry is now in position i
+      if (smallval != previouscol) {
+
+        netindex[previouscol] = startpos + i >> 1;
+
+        for (j = previouscol + 1; j < smallval; j++) {
+          netindex[j] = i;
+        }
+
+        previouscol = smallval;
+        startpos = i;
+      }
+    }
+
+    netindex[previouscol] = startpos + maxnetpos >> 1;
+    for (j = previouscol + 1; j < 256; j++) {
+      netindex[j] = maxnetpos; // really 256
+    }
+  }
+
+  // Main Learning Loop
+
+  function learn() {
+    var i;
+    var j;
+    var b;
+    var g;
+    var r;
+    var radius;
+    var rad;
+    var alpha;
+    var step;
+    var delta;
+    var samplepixels;
+    var p;
+    var pix;
+    var lim;
+
+    if (lengthcount < minpicturebytes) {
+      samplefac = 1;
+    }
+
+    alphadec = 30 + (samplefac - 1) / 3;
+    p = thepicture;
+    pix = 0;
+    lim = lengthcount;
+    samplepixels = lengthcount / (3 * samplefac);
+    delta = samplepixels / ncycles | 0;
+    alpha = initalpha;
+    radius = initradius;
+
+    rad = radius >> radiusbiasshift;
+    if (rad <= 1) {
+      rad = 0;
+    }
+
+    for (i = 0; i < rad; i++) {
+      radpower[i] = alpha * ((rad * rad - i * i) * radbias / (rad * rad));
+    }
+
+    if (lengthcount < minpicturebytes) {
+      step = 3;
+    } else if (lengthcount % prime1 !== 0) {
+      step = 3 * prime1;
+    } else {
+
+      if (lengthcount % prime2 !== 0) {
+        step = 3 * prime2;
+      } else {
+        if (lengthcount % prime3 !== 0) {
+          step = 3 * prime3;
+        } else {
+          step = 3 * prime4;
+        }
+      }
+    }
+
+    i = 0;
+
+    while (i < samplepixels) {
+
+      b = (p[pix + 0] & 0xff) << netbiasshift;
+      g = (p[pix + 1] & 0xff) << netbiasshift;
+      r = (p[pix + 2] & 0xff) << netbiasshift;
+      j = contest(b, g, r);
+
+      altersingle(alpha, j, b, g, r);
+
+      if (rad !== 0) {
+        // Alter neighbours
+        alterneigh(rad, j, b, g, r);
+      }
+
+      pix += step;
+
+      if (pix >= lim) {
+        pix -= lengthcount;
+      }
+
+      i++;
+
+      if (delta === 0) {
+        delta = 1;
+      }
+
+      if (i % delta === 0) {
+        alpha -= alpha / alphadec;
+        radius -= radius / radiusdec;
+        rad = radius >> radiusbiasshift;
+
+        if (rad <= 1) {
+          rad = 0;
+        }
+
+        for (j = 0; j < rad; j++) {
+          radpower[j] = alpha * ((rad * rad - j * j) * radbias / (rad * rad));
+        }
+      }
+    }
+  }
+
+  // Search for BGR values 0..255 (after net is unbiased) and return colour index
+  function map(b, g, r) {
+    var i;
+    var j;
+    var dist;
+    var a;
+    var bestd;
+    var p;
+    var best;
+
+    // Biggest possible distance is 256 * 3
+    bestd = 1000;
+    best = -1;
+    i = netindex[g]; // index on g
+    j = i - 1; // start at netindex[g] and work outwards
+
+    while (i < netsize || j >= 0) {
+
+      if (i < netsize) {
+
+        p = network[i];
+
+        dist = p[1] - g; // inx key
+
+        if (dist >= bestd) {
+          i = netsize; // stop iter
+        } else {
+
+          i++;
+
+          if (dist < 0) {
+            dist = -dist;
+          }
+
+          a = p[0] - b;
+
+          if (a < 0) {
+            a = -a;
+          }
+
+          dist += a;
+
+          if (dist < bestd) {
+            a = p[2] - r;
+
+            if (a < 0) {
+              a = -a;
+            }
+
+            dist += a;
+
+            if (dist < bestd) {
+              bestd = dist;
+              best = p[3];
+            }
+          }
+        }
+      }
+
+      if (j >= 0) {
+
+        p = network[j];
+
+        dist = g - p[1]; // inx key - reverse dif
+
+        if (dist >= bestd) {
+          j = -1; // stop iter
+        } else {
+
+          j--;
+          if (dist < 0) {
+            dist = -dist;
+          }
+          a = p[0] - b;
+          if (a < 0) {
+            a = -a;
+          }
+          dist += a;
+
+          if (dist < bestd) {
+            a = p[2] - r;
+            if (a < 0) {
+              a = -a;
+            }
+            dist += a;
+            if (dist < bestd) {
+              bestd = dist;
+              best = p[3];
+            }
+          }
+        }
+      }
+    }
+
+    return best;
+  }
+
+  function process() {
+    learn();
+    unbiasnet();
+    inxbuild();
+    return colorMap();
+  }
+
+  // Unbias network to give byte values 0..255 and record position i
+  // to prepare for sort
+  function unbiasnet() {
+    var i;
+    var j;
+
+    for (i = 0; i < netsize; i++) {
+      network[i][0] >>= netbiasshift;
+      network[i][1] >>= netbiasshift;
+      network[i][2] >>= netbiasshift;
+      network[i][3] = i; // record colour no
+    }
+  }
+
+  // Move adjacent neurons by precomputed alpha*(1-((i-j)^2/[r]^2))
+  // in radpower[|i-j|]
+  function alterneigh(rad, i, b, g, r) {
+
+    var j;
+    var k;
+    var lo;
+    var hi;
+    var a;
+    var m;
+
+    var p;
+
+    lo = i - rad;
+    if (lo < -1) {
+      lo = -1;
+    }
+
+    hi = i + rad;
+
+    if (hi > netsize) {
+      hi = netsize;
+    }
+
+    j = i + 1;
+    k = i - 1;
+    m = 1;
+
+    while (j < hi || k > lo) {
+
+      a = radpower[m++];
+
+      if (j < hi) {
+
+        p = network[j++];
+
+        try {
+
+          p[0] -= a * (p[0] - b) / alpharadbias | 0;
+          p[1] -= a * (p[1] - g) / alpharadbias | 0;
+          p[2] -= a * (p[2] - r) / alpharadbias | 0;
+        } catch (e) {}
+      }
+
+      if (k > lo) {
+
+        p = network[k--];
+
+        try {
+
+          p[0] -= a * (p[0] - b) / alpharadbias | 0;
+          p[1] -= a * (p[1] - g) / alpharadbias | 0;
+          p[2] -= a * (p[2] - r) / alpharadbias | 0;
+        } catch (e) {}
+      }
+    }
+  }
+
+  // Move neuron i towards biased (b,g,r) by factor alpha
+  function altersingle(alpha, i, b, g, r) {
+
+    // alter hit neuron
+    var n = network[i];
+    var alphaMult = alpha / initalpha;
+    n[0] -= alphaMult * (n[0] - b) | 0;
+    n[1] -= alphaMult * (n[1] - g) | 0;
+    n[2] -= alphaMult * (n[2] - r) | 0;
+  }
+
+  // Search for biased BGR values
+  function contest(b, g, r) {
+
+    // finds closest neuron (min dist) and updates freq
+    // finds best neuron (min dist-bias) and returns position
+    // for frequently chosen neurons, freq[i] is high and bias[i] is negative
+    // bias[i] = gamma*((1/netsize)-freq[i])
+
+    var i;
+    var dist;
+    var a;
+    var biasdist;
+    var betafreq;
+    var bestpos;
+    var bestbiaspos;
+    var bestd;
+    var bestbiasd;
+    var n;
+
+    bestd = ~(1 << 31);
+    bestbiasd = bestd;
+    bestpos = -1;
+    bestbiaspos = bestpos;
+
+    for (i = 0; i < netsize; i++) {
+
+      n = network[i];
+      dist = n[0] - b;
+
+      if (dist < 0) {
+        dist = -dist;
+      }
+
+      a = n[1] - g;
+
+      if (a < 0) {
+        a = -a;
+      }
+
+      dist += a;
+
+      a = n[2] - r;
+
+      if (a < 0) {
+        a = -a;
+      }
+
+      dist += a;
+
+      if (dist < bestd) {
+        bestd = dist;
+        bestpos = i;
+      }
+
+      biasdist = dist - (bias[i] >> intbiasshift - netbiasshift);
+
+      if (biasdist < bestbiasd) {
+        bestbiasd = biasdist;
+        bestbiaspos = i;
+      }
+
+      betafreq = freq[i] >> betashift;
+      freq[i] -= betafreq;
+      bias[i] += betafreq << gammashift;
+    }
+
+    freq[bestpos] += beta;
+    bias[bestpos] -= betagamma;
+    return bestbiaspos;
+  }
+
+  NeuQuantConstructor.apply(this, arguments);
+
+  var exports = {};
+  exports.map = map;
+  exports.process = process;
+
+  return exports;
+}
+
+/*
+  processFrameWorker.js
+  =====================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+function workerCode() {
+    var self = this;
+
+    try {
+        self.onmessage = function (ev) {
+            var data = ev.data || {};
+            var response;
+
+            if (data.gifshot) {
+                response = workerMethods.run(data);
+                postMessage(response);
+            }
+        };
+    } catch (e) {}
+
+    var workerMethods = {
+        dataToRGB: function dataToRGB(data, width, height) {
+            var length = width * height * 4;
+            var i = 0;
+            var rgb = [];
+
+            while (i < length) {
+                rgb.push(data[i++]);
+                rgb.push(data[i++]);
+                rgb.push(data[i++]);
+                i++; // for the alpha channel which we don't care about
+            }
+
+            return rgb;
+        },
+        componentizedPaletteToArray: function componentizedPaletteToArray(paletteRGB) {
+            paletteRGB = paletteRGB || [];
+
+            var paletteArray = [];
+
+            for (var i = 0; i < paletteRGB.length; i += 3) {
+                var r = paletteRGB[i];
+                var g = paletteRGB[i + 1];
+                var b = paletteRGB[i + 2];
+
+                paletteArray.push(r << 16 | g << 8 | b);
+            }
+
+            return paletteArray;
+        },
+        // This is the "traditional" Animated_GIF style of going from RGBA to indexed color frames
+        'processFrameWithQuantizer': function processFrameWithQuantizer(imageData, width, height, sampleInterval) {
+            var rgbComponents = this.dataToRGB(imageData, width, height);
+            var nq = new NeuQuant(rgbComponents, rgbComponents.length, sampleInterval);
+            var paletteRGB = nq.process();
+            var paletteArray = new Uint32Array(this.componentizedPaletteToArray(paletteRGB));
+            var numberPixels = width * height;
+            var indexedPixels = new Uint8Array(numberPixels);
+            var k = 0;
+
+            for (var i = 0; i < numberPixels; i++) {
+                var r = rgbComponents[k++];
+                var g = rgbComponents[k++];
+                var b = rgbComponents[k++];
+
+                indexedPixels[i] = nq.map(r, g, b);
+            }
+
+            return {
+                pixels: indexedPixels,
+                palette: paletteArray
+            };
+        },
+        'run': function run(frame) {
+            frame = frame || {};
+
+            var _frame = frame,
+                height = _frame.height,
+                palette = _frame.palette,
+                sampleInterval = _frame.sampleInterval,
+                width = _frame.width;
+
+            var imageData = frame.data;
+
+            return this.processFrameWithQuantizer(imageData, width, height, sampleInterval);
+        }
+    };
+
+    return workerMethods;
+}
+
+/*
+  gifWriter.js
+  ============
+*/
+
+// (c) Dean McNamee <dean@gmail.com>, 2013.
+//
+// https://github.com/deanm/omggif
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+//
+// omggif is a JavaScript implementation of a GIF 89a encoder and decoder,
+// including animation and compression.  It does not rely on any specific
+// underlying system, so should run in the browser, Node, or Plask.
+
+function gifWriter(buf, width, height, gopts) {
+  var p = 0;
+
+  gopts = gopts === undefined ? {} : gopts;
+  var loop_count = gopts.loop === undefined ? null : gopts.loop;
+  var global_palette = gopts.palette === undefined ? null : gopts.palette;
+
+  if (width <= 0 || height <= 0 || width > 65535 || height > 65535) throw "Width/Height invalid.";
+
+  function check_palette_and_num_colors(palette) {
+    var num_colors = palette.length;
+
+    if (num_colors < 2 || num_colors > 256 || num_colors & num_colors - 1) throw "Invalid code/color length, must be power of 2 and 2 .. 256.";
+    return num_colors;
+  }
+
+  // - Header.
+  buf[p++] = 0x47;
+  buf[p++] = 0x49;
+  buf[p++] = 0x46; // GIF
+  buf[p++] = 0x38;
+  buf[p++] = 0x39;
+  buf[p++] = 0x61; // 89a
+
+  // Handling of Global Color Table (palette) and background index.
+  var gp_num_colors_pow2 = 0;
+  var background = 0;
+
+  // - Logical Screen Descriptor.
+  // NOTE(deanm): w/h apparently ignored by implementations, but set anyway.
+  buf[p++] = width & 0xff;
+  buf[p++] = width >> 8 & 0xff;
+  buf[p++] = height & 0xff;
+  buf[p++] = height >> 8 & 0xff;
+  // NOTE: Indicates 0-bpp original color resolution (unused?).
+  buf[p++] = (global_palette !== null ? 0x80 : 0) | // Global Color Table Flag.
+  gp_num_colors_pow2; // NOTE: No sort flag (unused?).
+  buf[p++] = background; // Background Color Index.
+  buf[p++] = 0; // Pixel aspect ratio (unused?).
+
+  if (loop_count !== null) {
+    // Netscape block for looping.
+    if (loop_count < 0 || loop_count > 65535) throw "Loop count invalid.";
+
+    // Extension code, label, and length.
+    buf[p++] = 0x21;
+    buf[p++] = 0xff;
+    buf[p++] = 0x0b;
+    // NETSCAPE2.0
+    buf[p++] = 0x4e;
+    buf[p++] = 0x45;
+    buf[p++] = 0x54;
+    buf[p++] = 0x53;
+    buf[p++] = 0x43;
+    buf[p++] = 0x41;
+    buf[p++] = 0x50;
+    buf[p++] = 0x45;
+    buf[p++] = 0x32;
+    buf[p++] = 0x2e;
+    buf[p++] = 0x30;
+    // Sub-block
+    buf[p++] = 0x03;
+    buf[p++] = 0x01;
+    buf[p++] = loop_count & 0xff;
+    buf[p++] = loop_count >> 8 & 0xff;
+    buf[p++] = 0x00; // Terminator.
+  }
+
+  var ended = false;
+
+  this.addFrame = function (x, y, w, h, indexed_pixels, opts) {
+    if (ended === true) {
+      --p;
+      ended = false;
+    } // Un-end.
+
+    opts = opts === undefined ? {} : opts;
+
+    // TODO(deanm): Bounds check x, y.  Do they need to be within the virtual
+    // canvas width/height, I imagine?
+    if (x < 0 || y < 0 || x > 65535 || y > 65535) throw "x/y invalid.";
+
+    if (w <= 0 || h <= 0 || w > 65535 || h > 65535) throw "Width/Height invalid.";
+
+    if (indexed_pixels.length < w * h) throw "Not enough pixels for the frame size.";
+
+    var using_local_palette = true;
+    var palette = opts.palette;
+    if (palette === undefined || palette === null) {
+      using_local_palette = false;
+      palette = global_palette;
+    }
+
+    if (palette === undefined || palette === null) throw "Must supply either a local or global palette.";
+
+    var num_colors = check_palette_and_num_colors(palette);
+
+    // Compute the min_code_size (power of 2), destroying num_colors.
+    var min_code_size = 0;
+    while (num_colors >>= 1) {
+      ++min_code_size;
+    }num_colors = 1 << min_code_size; // Now we can easily get it back.
+
+    var delay = opts.delay === undefined ? 0 : opts.delay;
+
+    // From the spec:
+    //     0 -   No disposal specified. The decoder is
+    //           not required to take any action.
+    //     1 -   Do not dispose. The graphic is to be left
+    //           in place.
+    //     2 -   Restore to background color. The area used by the
+    //           graphic must be restored to the background color.
+    //     3 -   Restore to previous. The decoder is required to
+    //           restore the area overwritten by the graphic with
+    //           what was there prior to rendering the graphic.
+    //  4-7 -    To be defined.
+    // NOTE(deanm): Dispose background doesn't really work, apparently most
+    // browsers ignore the background palette index and clear to transparency.
+    var disposal = opts.disposal === undefined ? 0 : opts.disposal;
+    if (disposal < 0 || disposal > 3) // 4-7 is reserved.
+      throw "Disposal out of range.";
+
+    var use_transparency = false;
+    var transparent_index = 0;
+    if (opts.transparent !== undefined && opts.transparent !== null) {
+      use_transparency = true;
+      transparent_index = opts.transparent;
+      if (transparent_index < 0 || transparent_index >= num_colors) throw "Transparent color index.";
+    }
+
+    if (disposal !== 0 || use_transparency || delay !== 0) {
+      // - Graphics Control Extension
+      buf[p++] = 0x21;
+      buf[p++] = 0xf9; // Extension / Label.
+      buf[p++] = 4; // Byte size.
+
+      buf[p++] = disposal << 2 | (use_transparency === true ? 1 : 0);
+      buf[p++] = delay & 0xff;
+      buf[p++] = delay >> 8 & 0xff;
+      buf[p++] = transparent_index; // Transparent color index.
+      buf[p++] = 0; // Block Terminator.
+    }
+
+    // - Image Descriptor
+    buf[p++] = 0x2c; // Image Seperator.
+    buf[p++] = x & 0xff;
+    buf[p++] = x >> 8 & 0xff; // Left.
+    buf[p++] = y & 0xff;
+    buf[p++] = y >> 8 & 0xff; // Top.
+    buf[p++] = w & 0xff;
+    buf[p++] = w >> 8 & 0xff;
+    buf[p++] = h & 0xff;
+    buf[p++] = h >> 8 & 0xff;
+    // NOTE: No sort flag (unused?).
+    // TODO(deanm): Support interlace.
+    buf[p++] = using_local_palette === true ? 0x80 | min_code_size - 1 : 0;
+
+    // - Local Color Table
+    if (using_local_palette === true) {
+      for (var i = 0, il = palette.length; i < il; ++i) {
+        var rgb = palette[i];
+        buf[p++] = rgb >> 16 & 0xff;
+        buf[p++] = rgb >> 8 & 0xff;
+        buf[p++] = rgb & 0xff;
+      }
+    }
+
+    p = GifWriterOutputLZWCodeStream(buf, p, min_code_size < 2 ? 2 : min_code_size, indexed_pixels);
+  };
+
+  this.end = function () {
+    if (ended === false) {
+      buf[p++] = 0x3b; // Trailer.
+      ended = true;
+    }
+    return p;
+  };
+
+  // Main compression routine, palette indexes -> LZW code stream.
+  // |index_stream| must have at least one entry.
+  function GifWriterOutputLZWCodeStream(buf, p, min_code_size, index_stream) {
+    buf[p++] = min_code_size;
+    var cur_subblock = p++; // Pointing at the length field.
+
+    var clear_code = 1 << min_code_size;
+    var code_mask = clear_code - 1;
+    var eoi_code = clear_code + 1;
+    var next_code = eoi_code + 1;
+
+    var cur_code_size = min_code_size + 1; // Number of bits per code.
+    var cur_shift = 0;
+    // We have at most 12-bit codes, so we should have to hold a max of 19
+    // bits here (and then we would write out).
+    var cur = 0;
+
+    function emit_bytes_to_buffer(bit_block_size) {
+      while (cur_shift >= bit_block_size) {
+        buf[p++] = cur & 0xff;
+        cur >>= 8;
+        cur_shift -= 8;
+        if (p === cur_subblock + 256) {
+          // Finished a subblock.
+          buf[cur_subblock] = 255;
+          cur_subblock = p++;
+        }
+      }
+    }
+
+    function emit_code(c) {
+      cur |= c << cur_shift;
+      cur_shift += cur_code_size;
+      emit_bytes_to_buffer(8);
+    }
+
+    // I am not an expert on the topic, and I don't want to write a thesis.
+    // However, it is good to outline here the basic algorithm and the few data
+    // structures and optimizations here that make this implementation fast.
+    // The basic idea behind LZW is to build a table of previously seen runs
+    // addressed by a short id (herein called output code).  All data is
+    // referenced by a code, which represents one or more values from the
+    // original input stream.  All input bytes can be referenced as the same
+    // value as an output code.  So if you didn't want any compression, you
+    // could more or less just output the original bytes as codes (there are
+    // some details to this, but it is the idea).  In order to achieve
+    // compression, values greater then the input range (codes can be up to
+    // 12-bit while input only 8-bit) represent a sequence of previously seen
+    // inputs.  The decompressor is able to build the same mapping while
+    // decoding, so there is always a shared common knowledge between the
+    // encoding and decoder, which is also important for "timing" aspects like
+    // how to handle variable bit width code encoding.
+    //
+    // One obvious but very important consequence of the table system is there
+    // is always a unique id (at most 12-bits) to map the runs.  'A' might be
+    // 4, then 'AA' might be 10, 'AAA' 11, 'AAAA' 12, etc.  This relationship
+    // can be used for an effecient lookup strategy for the code mapping.  We
+    // need to know if a run has been seen before, and be able to map that run
+    // to the output code.  Since we start with known unique ids (input bytes),
+    // and then from those build more unique ids (table entries), we can
+    // continue this chain (almost like a linked list) to always have small
+    // integer values that represent the current byte chains in the encoder.
+    // This means instead of tracking the input bytes (AAAABCD) to know our
+    // current state, we can track the table entry for AAAABC (it is guaranteed
+    // to exist by the nature of the algorithm) and the next character D.
+    // Therefor the tuple of (table_entry, byte) is guaranteed to also be
+    // unique.  This allows us to create a simple lookup key for mapping input
+    // sequences to codes (table indices) without having to store or search
+    // any of the code sequences.  So if 'AAAA' has a table entry of 12, the
+    // tuple of ('AAAA', K) for any input byte K will be unique, and can be our
+    // key.  This leads to a integer value at most 20-bits, which can always
+    // fit in an SMI value and be used as a fast sparse array / object key.
+
+    // Output code for the current contents of the index buffer.
+    var ib_code = index_stream[0] & code_mask; // Load first input index.
+    var code_table = {}; // Key'd on our 20-bit "tuple".
+
+    emit_code(clear_code); // Spec says first code should be a clear code.
+
+    // First index already loaded, process the rest of the stream.
+    for (var i = 1, il = index_stream.length; i < il; ++i) {
+      var k = index_stream[i] & code_mask;
+      var cur_key = ib_code << 8 | k; // (prev, k) unique tuple.
+      var cur_code = code_table[cur_key]; // buffer + k.
+
+      // Check if we have to create a new code table entry.
+      if (cur_code === undefined) {
+        // We don't have buffer + k.
+        // Emit index buffer (without k).
+        // This is an inline version of emit_code, because this is the core
+        // writing routine of the compressor (and V8 cannot inline emit_code
+        // because it is a closure here in a different context).  Additionally
+        // we can call emit_byte_to_buffer less often, because we can have
+        // 30-bits (from our 31-bit signed SMI), and we know our codes will only
+        // be 12-bits, so can safely have 18-bits there without overflow.
+        // emit_code(ib_code);
+        cur |= ib_code << cur_shift;
+        cur_shift += cur_code_size;
+        while (cur_shift >= 8) {
+          buf[p++] = cur & 0xff;
+          cur >>= 8;
+          cur_shift -= 8;
+          if (p === cur_subblock + 256) {
+            // Finished a subblock.
+            buf[cur_subblock] = 255;
+            cur_subblock = p++;
+          }
+        }
+
+        if (next_code === 4096) {
+          // Table full, need a clear.
+          emit_code(clear_code);
+          next_code = eoi_code + 1;
+          cur_code_size = min_code_size + 1;
+          code_table = {};
+        } else {
+          // Table not full, insert a new entry.
+          // Increase our variable bit code sizes if necessary.  This is a bit
+          // tricky as it is based on "timing" between the encoding and
+          // decoder.  From the encoders perspective this should happen after
+          // we've already emitted the index buffer and are about to create the
+          // first table entry that would overflow our current code bit size.
+          if (next_code >= 1 << cur_code_size) ++cur_code_size;
+          code_table[cur_key] = next_code++; // Insert into code table.
+        }
+
+        ib_code = k; // Index buffer to single input k.
+      } else {
+        ib_code = cur_code; // Index buffer to sequence in code table.
+      }
+    }
+
+    emit_code(ib_code); // There will still be something in the index buffer.
+    emit_code(eoi_code); // End Of Information.
+
+    // Flush / finalize the sub-blocks stream to the buffer.
+    emit_bytes_to_buffer(1);
+
+    // Finish the sub-blocks, writing out any unfinished lengths and
+    // terminating with a sub-block of length 0.  If we have already started
+    // but not yet used a sub-block it can just become the terminator.
+    if (cur_subblock + 1 === p) {
+      // Started but unused.
+      buf[cur_subblock] = 0;
+    } else {
+      // Started and used, write length and additional terminator block.
+      buf[cur_subblock] = p - cur_subblock - 1;
+      buf[p++] = 0;
+    }
+    return p;
+  }
+}
+
+/*
+  animatedGIF.js
+  ==============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+// Helpers
+var noop$2 = function noop() {};
+
+var AnimatedGIF = function AnimatedGIF(options) {
+    this.canvas = null;
+    this.ctx = null;
+    this.repeat = 0;
+    this.frames = [];
+    this.numRenderedFrames = 0;
+    this.onRenderCompleteCallback = noop$2;
+    this.onRenderProgressCallback = noop$2;
+    this.workers = [];
+    this.availableWorkers = [];
+    this.generatingGIF = false;
+    this.options = options;
+
+    // Constructs and initializes the the web workers appropriately
+    this.initializeWebWorkers(options);
+};
+
+AnimatedGIF.prototype = {
+    'workerMethods': workerCode(),
+    'initializeWebWorkers': function initializeWebWorkers(options) {
+        var self = this;
+        var processFrameWorkerCode = NeuQuant.toString() + '(' + workerCode.toString() + '());';
+        var webWorkerObj = void 0;
+        var objectUrl = void 0;
+        var webWorker = void 0;
+        var numWorkers = void 0;
+        var x = -1;
+        var workerError = '';
+
+        numWorkers = options.numWorkers;
+
+        while (++x < numWorkers) {
+            webWorkerObj = utils.createWebWorker(processFrameWorkerCode);
+
+            if (utils.isObject(webWorkerObj)) {
+                objectUrl = webWorkerObj.objectUrl;
+                webWorker = webWorkerObj.worker;
+
+                self.workers.push({
+                    worker: webWorker,
+                    objectUrl: objectUrl
+                });
+
+                self.availableWorkers.push(webWorker);
+            } else {
+                workerError = webWorkerObj;
+                utils.webWorkerError = !!webWorkerObj;
+            }
+        }
+
+        this.workerError = workerError;
+        this.canvas = document.createElement('canvas');
+        this.canvas.width = options.gifWidth;
+        this.canvas.height = options.gifHeight;
+        this.ctx = this.canvas.getContext('2d');
+        this.frames = [];
+    },
+    // Return a worker for processing a frame
+    getWorker: function getWorker() {
+        return this.availableWorkers.pop();
+    },
+    // Restores a worker to the pool
+    freeWorker: function freeWorker(worker) {
+        this.availableWorkers.push(worker);
+    },
+    byteMap: function () {
+        var byteMap = [];
+
+        for (var i = 0; i < 256; i++) {
+            byteMap[i] = String.fromCharCode(i);
+        }
+
+        return byteMap;
+    }(),
+    bufferToString: function bufferToString(buffer) {
+        var numberValues = buffer.length;
+        var str = '';
+        var x = -1;
+
+        while (++x < numberValues) {
+            str += this.byteMap[buffer[x]];
+        }
+
+        return str;
+    },
+    onFrameFinished: function onFrameFinished(progressCallback) {
+        // The GIF is not written until we're done with all the frames
+        // because they might not be processed in the same order
+        var self = this;
+        var frames = self.frames;
+        var options = self.options;
+        var hasExistingImages = !!(options.images || []).length;
+        var allDone = frames.every(function (frame) {
+            return !frame.beingProcessed && frame.done;
+        });
+
+        self.numRenderedFrames++;
+
+        if (hasExistingImages) {
+            progressCallback(self.numRenderedFrames / frames.length);
+        }
+
+        self.onRenderProgressCallback(self.numRenderedFrames * 0.75 / frames.length);
+
+        if (allDone) {
+            if (!self.generatingGIF) {
+                self.generateGIF(frames, self.onRenderCompleteCallback);
+            }
+        } else {
+            utils.requestTimeout(function () {
+                self.processNextFrame();
+            }, 1);
+        }
+    },
+    processFrame: function processFrame(position) {
+        var AnimatedGifContext = this;
+        var options = this.options;
+        var _options = this.options,
+            progressCallback = _options.progressCallback,
+            sampleInterval = _options.sampleInterval;
+
+        var frames = this.frames;
+        var frame = void 0;
+        var worker = void 0;
+        var done = function done() {
+            var ev = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+            var data = ev.data;
+
+            // Delete original data, and free memory
+            delete frame.data;
+
+            frame.pixels = Array.prototype.slice.call(data.pixels);
+            frame.palette = Array.prototype.slice.call(data.palette);
+            frame.done = true;
+            frame.beingProcessed = false;
+
+            AnimatedGifContext.freeWorker(worker);
+
+            AnimatedGifContext.onFrameFinished(progressCallback);
+        };
+
+        frame = frames[position];
+
+        if (frame.beingProcessed || frame.done) {
+            this.onFrameFinished();
+
+            return;
+        }
+
+        frame.sampleInterval = sampleInterval;
+        frame.beingProcessed = true;
+        frame.gifshot = true;
+
+        worker = this.getWorker();
+
+        if (worker) {
+            // Process the frame in a web worker
+            worker.onmessage = done;
+            worker.postMessage(frame);
+        } else {
+            // Process the frame in the current thread
+            done({
+                'data': AnimatedGifContext.workerMethods.run(frame)
+            });
+        }
+    },
+    startRendering: function startRendering(completeCallback) {
+        this.onRenderCompleteCallback = completeCallback;
+
+        for (var i = 0; i < this.options.numWorkers && i < this.frames.length; i++) {
+            this.processFrame(i);
+        }
+    },
+    processNextFrame: function processNextFrame() {
+        var position = -1;
+
+        for (var i = 0; i < this.frames.length; i++) {
+            var frame = this.frames[i];
+
+            if (!frame.done && !frame.beingProcessed) {
+                position = i;
+                break;
+            }
+        }
+
+        if (position >= 0) {
+            this.processFrame(position);
+        }
+    },
+    // Takes the already processed data in frames and feeds it to a new
+    // GifWriter instance in order to get the binary GIF file
+    generateGIF: function generateGIF(frames, callback) {
+        // TODO: Weird: using a simple JS array instead of a typed array,
+        // the files are WAY smaller o_o. Patches/explanations welcome!
+        var buffer = []; // new Uint8Array(width * height * frames.length * 5);
+        var gifOptions = {
+            loop: this.repeat
+        };
+        var options = this.options;
+        var interval = options.interval;
+
+        var frameDuration = options.frameDuration;
+        var existingImages = options.images;
+        var hasExistingImages = !!existingImages.length;
+        var height = options.gifHeight;
+        var width = options.gifWidth;
+        var gifWriter$$1 = new gifWriter(buffer, width, height, gifOptions);
+        var onRenderProgressCallback = this.onRenderProgressCallback;
+        var delay = hasExistingImages ? interval * 100 : 0;
+        var bufferToString = void 0;
+        var gif = void 0;
+
+        this.generatingGIF = true;
+
+        utils.each(frames, function (iterator, frame) {
+            var framePalette = frame.palette;
+
+            onRenderProgressCallback(0.75 + 0.25 * frame.position * 1.0 / frames.length);
+
+            for (var i = 0; i < frameDuration; i++) {
+                gifWriter$$1.addFrame(0, 0, width, height, frame.pixels, {
+                    palette: framePalette,
+                    delay: delay
+                });
+            }
+        });
+
+        gifWriter$$1.end();
+
+        onRenderProgressCallback(1.0);
+
+        this.frames = [];
+
+        this.generatingGIF = false;
+
+        if (utils.isFunction(callback)) {
+            bufferToString = this.bufferToString(buffer);
+            gif = 'data:image/gif;base64,' + utils.btoa(bufferToString);
+
+            callback(gif);
+        }
+    },
+    // From GIF: 0 = loop forever, null = not looping, n > 0 = loop n times and stop
+    setRepeat: function setRepeat(r) {
+        this.repeat = r;
+    },
+    addFrame: function addFrame(element, gifshotOptions) {
+        gifshotOptions = utils.isObject(gifshotOptions) ? gifshotOptions : {};
+
+        var self = this;
+        var ctx = self.ctx;
+        var options = self.options;
+        var width = options.gifWidth;
+        var height = options.gifHeight;
+        var fontSize = utils.getFontSize(gifshotOptions);
+        var _gifshotOptions = gifshotOptions,
+            filter = _gifshotOptions.filter,
+            fontColor = _gifshotOptions.fontColor,
+            fontFamily = _gifshotOptions.fontFamily,
+            fontWeight = _gifshotOptions.fontWeight,
+            gifHeight = _gifshotOptions.gifHeight,
+            gifWidth = _gifshotOptions.gifWidth,
+            text = _gifshotOptions.text,
+            textAlign = _gifshotOptions.textAlign,
+            textBaseline = _gifshotOptions.textBaseline;
+
+        var textXCoordinate = gifshotOptions.textXCoordinate ? gifshotOptions.textXCoordinate : textAlign === 'left' ? 1 : textAlign === 'right' ? width : width / 2;
+        var textYCoordinate = gifshotOptions.textYCoordinate ? gifshotOptions.textYCoordinate : textBaseline === 'top' ? 1 : textBaseline === 'center' ? height / 2 : height;
+        var font = fontWeight + ' ' + fontSize + ' ' + fontFamily;
+        var imageData = void 0;
+
+        try {
+            ctx.filter = filter;
+
+            ctx.drawImage(element, 0, 0, width, height);
+
+            if (text) {
+                ctx.font = font;
+                ctx.fillStyle = fontColor;
+                ctx.textAlign = textAlign;
+                ctx.textBaseline = textBaseline;
+                ctx.fillText(text, textXCoordinate, textYCoordinate);
+            }
+
+            imageData = ctx.getImageData(0, 0, width, height);
+
+            self.addFrameImageData(imageData);
+        } catch (e) {
+            return '' + e;
+        }
+    },
+    addFrameImageData: function addFrameImageData() {
+        var imageData = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        var frames = this.frames;
+        var imageDataArray = imageData.data;
+
+        this.frames.push({
+            'data': imageDataArray,
+            'width': imageData.width,
+            'height': imageData.height,
+            'palette': null,
+            'dithering': null,
+            'done': false,
+            'beingProcessed': false,
+            'position': frames.length
+        });
+    },
+    onRenderProgress: function onRenderProgress(callback) {
+        this.onRenderProgressCallback = callback;
+    },
+    isRendering: function isRendering() {
+        return this.generatingGIF;
+    },
+    getBase64GIF: function getBase64GIF(completeCallback) {
+        var self = this;
+        var onRenderComplete = function onRenderComplete(gif) {
+            self.destroyWorkers();
+
+            utils.requestTimeout(function () {
+                completeCallback(gif);
+            }, 0);
+        };
+
+        self.startRendering(onRenderComplete);
+    },
+    destroyWorkers: function destroyWorkers() {
+        if (this.workerError) {
+            return;
+        }
+
+        var workers = this.workers;
+
+        // Explicitly ask web workers to die so they are explicitly GC'ed
+        utils.each(workers, function (iterator, workerObj) {
+            var worker = workerObj.worker;
+            var objectUrl = workerObj.objectUrl;
+
+            worker.terminate();
+            utils.URL.revokeObjectURL(objectUrl);
+        });
+    }
+};
+
+/*
+  getBase64GIF.js
+  ===============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+function getBase64GIF(animatedGifInstance, callback) {
+    // This is asynchronous, rendered with WebWorkers
+    animatedGifInstance.getBase64GIF(function (image) {
+        callback({
+            error: false,
+            errorCode: '',
+            errorMsg: '',
+            image: image
+        });
+    });
+}
+
+/*
+  existingImages.js
+  =================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+function existingImages() {
+    var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var self = this;
+    var callback = obj.callback,
+        images = obj.images,
+        options = obj.options;
+
+    var imagesLength = obj.imagesLength;
+    var skipObj = {
+        'getUserMedia': true,
+        'window.URL': true
+    };
+    var errorObj = error.validate(skipObj);
+    var loadedImages = [];
+    var loadedImagesLength = 0;
+    var tempImage = void 0;
+    var ag = void 0;
+
+    if (errorObj.error) {
+        return callback(errorObj);
+    }
+
+    // change workerPath to point to where Animated_GIF.worker.js is
+    ag = new AnimatedGIF(options);
+
+    utils.each(images, function (index, image) {
+        var currentImage = image;
+
+        if (image.src) {
+            currentImage = currentImage.src;
+        }
+        if (utils.isElement(currentImage)) {
+            if (options.crossOrigin) {
+                currentImage.crossOrigin = options.crossOrigin;
+            }
+
+            loadedImages[index] = currentImage;
+            loadedImagesLength += 1;
+
+            if (loadedImagesLength === imagesLength) {
+                addLoadedImagesToGif();
+            }
+        } else if (utils.isString(currentImage)) {
+            tempImage = new Image();
+
+            if (options.crossOrigin) {
+                tempImage.crossOrigin = options.crossOrigin;
+            }
+
+            (function (tempImage) {
+                if (image.text) {
+                    tempImage.text = image.text;
+                }
+
+                tempImage.onerror = function (e) {
+                    var obj = void 0;
+
+                    --imagesLength; // skips over images that error out
+
+                    if (imagesLength === 0) {
+                        obj = {};
+                        obj.error = 'None of the requested images was capable of being retrieved';
+
+                        return callback(obj);
+                    }
+                };
+
+                tempImage.onload = function (e) {
+                    if (image.text) {
+                        loadedImages[index] = {
+                            img: tempImage,
+                            text: tempImage.text
+                        };
+                    } else {
+                        loadedImages[index] = tempImage;
+                    }
+
+                    loadedImagesLength += 1;
+
+                    if (loadedImagesLength === imagesLength) {
+                        addLoadedImagesToGif();
+                    }
+
+                    utils.removeElement(tempImage);
+                };
+
+                tempImage.src = currentImage;
+            })(tempImage);
+
+            utils.setCSSAttr(tempImage, {
+                position: 'fixed',
+                opacity: '0'
+            });
+
+            document.body.appendChild(tempImage);
+        }
+    });
+
+    function addLoadedImagesToGif() {
+        utils.each(loadedImages, function (index, loadedImage) {
+            if (loadedImage) {
+                if (loadedImage.text) {
+                    ag.addFrame(loadedImage.img, options, loadedImage.text);
+                } else {
+                    ag.addFrame(loadedImage, options);
+                }
+            }
+        });
+
+        getBase64GIF(ag, callback);
+    }
+}
+
+/*
+  screenShot.js
+  =============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+// Helpers
+var noop$3 = function noop() {};
+
+var screenShot = {
+    getGIF: function getGIF() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var callback = arguments[1];
+
+        callback = utils.isFunction(callback) ? callback : noop$3;
+
+        var canvas = document.createElement('canvas');
+        var context = void 0;
+        var existingImages = options.images;
+        var hasExistingImages = !!existingImages.length;
+        var cameraStream = options.cameraStream,
+            crop = options.crop,
+            filter = options.filter,
+            fontColor = options.fontColor,
+            fontFamily = options.fontFamily,
+            fontWeight = options.fontWeight,
+            keepCameraOn = options.keepCameraOn,
+            numWorkers = options.numWorkers,
+            progressCallback = options.progressCallback,
+            saveRenderingContexts = options.saveRenderingContexts,
+            savedRenderingContexts = options.savedRenderingContexts,
+            text = options.text,
+            textAlign = options.textAlign,
+            textBaseline = options.textBaseline,
+            videoElement = options.videoElement,
+            videoHeight = options.videoHeight,
+            videoWidth = options.videoWidth,
+            webcamVideoElement = options.webcamVideoElement;
+
+        var gifWidth = Number(options.gifWidth);
+        var gifHeight = Number(options.gifHeight);
+        var interval = Number(options.interval);
+        var sampleInterval = Number(options.sampleInterval);
+        var waitBetweenFrames = hasExistingImages ? 0 : interval * 1000;
+        var renderingContextsToSave = [];
+        var numFrames = savedRenderingContexts.length ? savedRenderingContexts.length : options.numFrames;
+        var pendingFrames = numFrames;
+        var ag = new AnimatedGIF(options);
+        var fontSize = utils.getFontSize(options);
+        var textXCoordinate = options.textXCoordinate ? options.textXCoordinate : textAlign === 'left' ? 1 : textAlign === 'right' ? gifWidth : gifWidth / 2;
+        var textYCoordinate = options.textYCoordinate ? options.textYCoordinate : textBaseline === 'top' ? 1 : textBaseline === 'center' ? gifHeight / 2 : gifHeight;
+        var font = fontWeight + ' ' + fontSize + ' ' + fontFamily;
+        var sourceX = crop ? Math.floor(crop.scaledWidth / 2) : 0;
+        var sourceWidth = crop ? videoWidth - crop.scaledWidth : 0;
+        var sourceY = crop ? Math.floor(crop.scaledHeight / 2) : 0;
+        var sourceHeight = crop ? videoHeight - crop.scaledHeight : 0;
+        var captureFrames = function captureSingleFrame() {
+            var framesLeft = pendingFrames - 1;
+
+            if (savedRenderingContexts.length) {
+                context.putImageData(savedRenderingContexts[numFrames - pendingFrames], 0, 0);
+
+                finishCapture();
+            } else {
+                drawVideo();
+            }
+
+            function drawVideo() {
+                try {
+                    // Makes sure the canvas video heights/widths are in bounds
+                    if (sourceWidth > videoWidth) {
+                        sourceWidth = videoWidth;
+                    }
+
+                    if (sourceHeight > videoHeight) {
+                        sourceHeight = videoHeight;
+                    }
+
+                    if (sourceX < 0) {
+                        sourceX = 0;
+                    }
+
+                    if (sourceY < 0) {
+                        sourceY = 0;
+                    }
+
+                    context.filter = filter;
+
+                    context.drawImage(videoElement, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, gifWidth, gifHeight);
+
+                    finishCapture();
+                } catch (e) {
+                    // There is a Firefox bug that sometimes throws NS_ERROR_NOT_AVAILABLE and
+                    // and IndexSizeError errors when drawing a video element to the canvas
+                    if (e.name === 'NS_ERROR_NOT_AVAILABLE') {
+                        // Wait 100ms before trying again
+                        utils.requestTimeout(drawVideo, 100);
+                    } else {
+                        throw e;
+                    }
+                }
+            }
+
+            function finishCapture() {
+                var imageData = void 0;
+
+                if (saveRenderingContexts) {
+                    renderingContextsToSave.push(context.getImageData(0, 0, gifWidth, gifHeight));
+                }
+
+                // If there is text to display, make sure to display it on the canvas after the image is drawn
+                if (text) {
+                    context.font = font;
+                    context.fillStyle = fontColor;
+                    context.textAlign = textAlign;
+                    context.textBaseline = textBaseline;
+                    context.fillText(text, textXCoordinate, textYCoordinate);
+                }
+
+                imageData = context.getImageData(0, 0, gifWidth, gifHeight);
+
+                ag.addFrameImageData(imageData);
+
+                pendingFrames = framesLeft;
+
+                // Call back with an r value indicating how far along we are in capture
+                progressCallback((numFrames - pendingFrames) / numFrames);
+
+                if (framesLeft > 0) {
+                    // test
+                    utils.requestTimeout(captureSingleFrame, waitBetweenFrames);
+                }
+
+                if (!pendingFrames) {
+                    ag.getBase64GIF(function (image) {
+                        callback({
+                            'error': false,
+                            'errorCode': '',
+                            'errorMsg': '',
+                            'image': image,
+                            'cameraStream': cameraStream,
+                            'videoElement': videoElement,
+                            'webcamVideoElement': webcamVideoElement,
+                            'savedRenderingContexts': renderingContextsToSave,
+                            'keepCameraOn': keepCameraOn
+                        });
+                    });
+                }
+            }
+        };
+
+        numFrames = numFrames !== undefined ? numFrames : 10;
+        interval = interval !== undefined ? interval : 0.1; // In seconds
+
+        canvas.width = gifWidth;
+        canvas.height = gifHeight;
+        context = canvas.getContext('2d');
+
+        (function capture() {
+            if (!savedRenderingContexts.length && videoElement.currentTime === 0) {
+                utils.requestTimeout(capture, 100);
+
+                return;
+            }
+
+            captureFrames();
+        })();
+    },
+    getCropDimensions: function getCropDimensions() {
+        var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        var width = obj.videoWidth;
+        var height = obj.videoHeight;
+        var gifWidth = obj.gifWidth;
+        var gifHeight = obj.gifHeight;
+        var result = {
+            width: 0,
+            height: 0,
+            scaledWidth: 0,
+            scaledHeight: 0
+        };
+
+        if (width > height) {
+            result.width = Math.round(width * (gifHeight / height)) - gifWidth;
+            result.scaledWidth = Math.round(result.width * (height / gifHeight));
+        } else {
+            result.height = Math.round(height * (gifWidth / width)) - gifHeight;
+            result.scaledHeight = Math.round(result.height * (width / gifWidth));
+        }
+
+        return result;
+    }
+};
+
+/*
+  videoStream.js
+  ==============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+var videoStream = {
+    loadedData: false,
+    defaultVideoDimensions: {
+        width: 640,
+        height: 480
+    },
+    findVideoSize: function findVideoSizeMethod(obj) {
+        findVideoSizeMethod.attempts = findVideoSizeMethod.attempts || 0;
+
+        var cameraStream = obj.cameraStream,
+            completedCallback = obj.completedCallback,
+            videoElement = obj.videoElement;
+
+
+        if (!videoElement) {
+            return;
+        }
+
+        if (videoElement.videoWidth > 0 && videoElement.videoHeight > 0) {
+            videoElement.removeEventListener('loadeddata', videoStream.findVideoSize);
+
+            completedCallback({
+                videoElement: videoElement,
+                cameraStream: cameraStream,
+                videoWidth: videoElement.videoWidth,
+                videoHeight: videoElement.videoHeight
+            });
+        } else {
+            if (findVideoSizeMethod.attempts < 10) {
+                findVideoSizeMethod.attempts += 1;
+
+                utils.requestTimeout(function () {
+                    videoStream.findVideoSize(obj);
+                }, 400);
+            } else {
+                completedCallback({
+                    videoElement: videoElement,
+                    cameraStream: cameraStream,
+                    videoWidth: videoStream.defaultVideoDimensions.width,
+                    videoHeight: videoStream.defaultVideoDimensions.height
+                });
+            }
+        }
+    },
+    onStreamingTimeout: function onStreamingTimeout(callback) {
+        if (utils.isFunction(callback)) {
+            callback({
+                error: true,
+                errorCode: 'getUserMedia',
+                errorMsg: 'There was an issue with the getUserMedia API - Timed out while trying to start streaming',
+                image: null,
+                cameraStream: {}
+            });
+        }
+    },
+    stream: function stream(obj) {
+        var existingVideo = utils.isArray(obj.existingVideo) ? obj.existingVideo[0] : obj.existingVideo;
+        var cameraStream = obj.cameraStream,
+            completedCallback = obj.completedCallback,
+            streamedCallback = obj.streamedCallback,
+            videoElement = obj.videoElement;
+
+
+        if (utils.isFunction(streamedCallback)) {
+            streamedCallback();
+        }
+
+        if (existingVideo) {
+            if (utils.isString(existingVideo)) {
+                videoElement.src = existingVideo;
+                videoElement.innerHTML = '<source src="' + existingVideo + '" type="video/' + utils.getExtension(existingVideo) + '" />';
+            } else if (existingVideo instanceof Blob) {
+                try {
+                    videoElement.src = utils.URL.createObjectURL(existingVideo);
+                } catch (e) {}
+
+                videoElement.innerHTML = '<source src="' + existingVideo + '" type="' + existingVideo.type + '" />';
+            }
+        } else if (videoElement.mozSrcObject) {
+            videoElement.mozSrcObject = cameraStream;
+        } else if (utils.URL) {
+            try {
+                videoElement.srcObject = cameraStream;
+                videoElement.src = utils.URL.createObjectURL(cameraStream);
+            } catch (e) {
+                videoElement.srcObject = cameraStream;
+            }
+        }
+
+        videoElement.play();
+
+        utils.requestTimeout(function checkLoadedData() {
+            checkLoadedData.count = checkLoadedData.count || 0;
+
+            if (videoStream.loadedData === true) {
+                videoStream.findVideoSize({
+                    videoElement: videoElement,
+                    cameraStream: cameraStream,
+                    completedCallback: completedCallback
+                });
+
+                videoStream.loadedData = false;
+            } else {
+                checkLoadedData.count += 1;
+
+                if (checkLoadedData.count > 10) {
+                    videoStream.findVideoSize({
+                        videoElement: videoElement,
+                        cameraStream: cameraStream,
+                        completedCallback: completedCallback
+                    });
+                } else {
+                    checkLoadedData();
+                }
+            }
+        }, 0);
+    },
+    startStreaming: function startStreaming(obj) {
+        var errorCallback = utils.isFunction(obj.error) ? obj.error : utils.noop;
+        var streamedCallback = utils.isFunction(obj.streamed) ? obj.streamed : utils.noop;
+        var completedCallback = utils.isFunction(obj.completed) ? obj.completed : utils.noop;
+        var crossOrigin = obj.crossOrigin,
+            existingVideo = obj.existingVideo,
+            lastCameraStream = obj.lastCameraStream,
+            options = obj.options,
+            webcamVideoElement = obj.webcamVideoElement;
+
+        var videoElement = utils.isElement(existingVideo) ? existingVideo : webcamVideoElement ? webcamVideoElement : document.createElement('video');
+        var cameraStream = void 0;
+
+        if (crossOrigin) {
+            videoElement.crossOrigin = options.crossOrigin;
+        }
+
+        videoElement.autoplay = true;
+        videoElement.loop = true;
+        videoElement.muted = true;
+        videoElement.addEventListener('loadeddata', function (event) {
+            videoStream.loadedData = true;
+            if (options.offset) {
+                videoElement.currentTime = options.offset;
+            }
+        });
+
+        if (existingVideo) {
+            videoStream.stream({
+                videoElement: videoElement,
+                existingVideo: existingVideo,
+                completedCallback: completedCallback
+            });
+        } else if (lastCameraStream) {
+            videoStream.stream({
+                videoElement: videoElement,
+                cameraStream: lastCameraStream,
+                streamedCallback: streamedCallback,
+                completedCallback: completedCallback
+            });
+        } else {
+            utils.getUserMedia({
+                video: true
+            }, function (stream) {
+                videoStream.stream({
+                    videoElement: videoElement,
+                    cameraStream: stream,
+                    streamedCallback: streamedCallback,
+                    completedCallback: completedCallback
+                });
+            }, errorCallback);
+        }
+    },
+    startVideoStreaming: function startVideoStreaming(callback) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+        var timeoutLength = options.timeout !== undefined ? options.timeout : 0;
+        var originalCallback = options.callback;
+        var webcamVideoElement = options.webcamVideoElement;
+        var noGetUserMediaSupportTimeout = void 0;
+
+        // Some browsers apparently have support for video streaming because of the
+        // presence of the getUserMedia function, but then do not answer our
+        // calls for streaming.
+        // So we'll set up this timeout and if nothing happens after a while, we'll
+        // conclude that there's no actual getUserMedia support.
+        if (timeoutLength > 0) {
+            noGetUserMediaSupportTimeout = utils.requestTimeout(function () {
+                videoStream.onStreamingTimeout(originalCallback);
+            }, 10000);
+        }
+
+        videoStream.startStreaming({
+            error: function error() {
+                originalCallback({
+                    error: true,
+                    errorCode: 'getUserMedia',
+                    errorMsg: 'There was an issue with the getUserMedia API - the user probably denied permission',
+                    image: null,
+                    cameraStream: {}
+                });
+            },
+            streamed: function streamed() {
+                // The streaming started somehow, so we can assume there is getUserMedia support
+                clearTimeout(noGetUserMediaSupportTimeout);
+            },
+            completed: function completed() {
+                var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+                var cameraStream = obj.cameraStream,
+                    videoElement = obj.videoElement,
+                    videoHeight = obj.videoHeight,
+                    videoWidth = obj.videoWidth;
+
+
+                callback({
+                    cameraStream: cameraStream,
+                    videoElement: videoElement,
+                    videoHeight: videoHeight,
+                    videoWidth: videoWidth
+                });
+            },
+            lastCameraStream: options.lastCameraStream,
+            webcamVideoElement: webcamVideoElement,
+            crossOrigin: options.crossOrigin,
+            options: options
+        });
+    },
+    stopVideoStreaming: function stopVideoStreaming(obj) {
+        obj = utils.isObject(obj) ? obj : {};
+
+        var _obj = obj,
+            keepCameraOn = _obj.keepCameraOn,
+            videoElement = _obj.videoElement,
+            webcamVideoElement = _obj.webcamVideoElement;
+
+        var cameraStream = obj.cameraStream || {};
+        var cameraStreamTracks = cameraStream.getTracks ? cameraStream.getTracks() || [] : [];
+        var hasCameraStreamTracks = !!cameraStreamTracks.length;
+        var firstCameraStreamTrack = cameraStreamTracks[0];
+
+        if (!keepCameraOn && hasCameraStreamTracks) {
+            if (utils.isFunction(firstCameraStreamTrack.stop)) {
+                // Stops the camera stream
+                firstCameraStreamTrack.stop();
+            }
+        }
+
+        if (utils.isElement(videoElement) && !webcamVideoElement) {
+            // Pauses the video, revokes the object URL (freeing up memory), and remove the video element
+            videoElement.pause();
+
+            // Destroys the object url
+            if (utils.isFunction(utils.URL.revokeObjectURL) && !utils.webWorkerError) {
+                if (videoElement.src) {
+                    utils.URL.revokeObjectURL(videoElement.src);
+                }
+            }
+
+            // Removes the video element from the DOM
+            utils.removeElement(videoElement);
+        }
+    }
+};
+
+/*
+  stopVideoStreaming.js
+  =====================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+function stopVideoStreaming(options) {
+  options = utils.isObject(options) ? options : {};
+
+  videoStream.stopVideoStreaming(options);
+}
+
+/*
+  createAndGetGIF.js
+  ==================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function createAndGetGIF(obj, callback) {
+    var options = obj.options || {};
+
+    var images = options.images,
+        video = options.video;
+
+    var gifWidth = Number(options.gifWidth);
+    var gifHeight = Number(options.gifHeight);
+    var numFrames = Number(options.numFrames);
+    var cameraStream = obj.cameraStream,
+        videoElement = obj.videoElement,
+        videoWidth = obj.videoWidth,
+        videoHeight = obj.videoHeight;
+
+    var cropDimensions = screenShot.getCropDimensions({
+        videoWidth: videoWidth,
+        videoHeight: videoHeight,
+        gifHeight: gifHeight,
+        gifWidth: gifWidth
+    });
+    var completeCallback = callback;
+
+    options.crop = cropDimensions;
+    options.videoElement = videoElement;
+    options.videoWidth = videoWidth;
+    options.videoHeight = videoHeight;
+    options.cameraStream = cameraStream;
+
+    if (!utils.isElement(videoElement)) {
+        return;
+    }
+
+    videoElement.width = gifWidth + cropDimensions.width;
+    videoElement.height = gifHeight + cropDimensions.height;
+
+    if (!options.webcamVideoElement) {
+        utils.setCSSAttr(videoElement, {
+            position: 'fixed',
+            opacity: '0'
+        });
+
+        document.body.appendChild(videoElement);
+    }
+
+    // Firefox doesn't seem to obey autoplay if the element is not in the DOM when the content
+    // is loaded, so we must manually trigger play after adding it, or the video will be frozen
+    videoElement.play();
+
+    screenShot.getGIF(options, function (obj) {
+        if ((!images || !images.length) && (!video || !video.length)) {
+            stopVideoStreaming(obj);
+        }
+
+        completeCallback(obj);
+    });
+}
+
+/*
+  existingVideo.js
+  ================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function existingVideo() {
+    var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = obj.callback,
+        existingVideo = obj.existingVideo,
+        options = obj.options;
+
+    var skipObj = {
+        getUserMedia: true,
+        'window.URL': true
+    };
+    var errorObj = error.validate(skipObj);
+    var loadedImages = 0;
+    var videoType = void 0;
+    var videoSrc = void 0;
+    var tempImage = void 0;
+    var ag = void 0;
+
+    if (errorObj.error) {
+        return callback(errorObj);
+    }
+
+    if (utils.isElement(existingVideo) && existingVideo.src) {
+        videoSrc = existingVideo.src;
+        videoType = utils.getExtension(videoSrc);
+
+        if (!utils.isSupported.videoCodecs[videoType]) {
+            return callback(error.messages.videoCodecs);
+        }
+    } else if (utils.isArray(existingVideo)) {
+        utils.each(existingVideo, function (iterator, videoSrc) {
+            if (videoSrc instanceof Blob) {
+                videoType = videoSrc.type.substr(videoSrc.type.lastIndexOf('/') + 1, videoSrc.length);
+            } else {
+                videoType = videoSrc.substr(videoSrc.lastIndexOf('.') + 1, videoSrc.length);
+            }
+
+            if (utils.isSupported.videoCodecs[videoType]) {
+                existingVideo = videoSrc;
+
+                return false;
+            }
+        });
+    }
+
+    videoStream.startStreaming({
+        completed: function completed(obj) {
+            obj.options = options || {};
+
+            createAndGetGIF(obj, callback);
+        },
+        existingVideo: existingVideo,
+        crossOrigin: options.crossOrigin,
+        options: options
+    });
+}
+
+/*
+  existingWebcam.js
+  =================
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function existingWebcam() {
+    var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = obj.callback,
+        lastCameraStream = obj.lastCameraStream,
+        options = obj.options,
+        webcamVideoElement = obj.webcamVideoElement;
+
+
+    if (!isWebCamGIFSupported()) {
+        return callback(error.validate());
+    }
+
+    if (options.savedRenderingContexts.length) {
+        screenShot.getGIF(options, function (obj) {
+            callback(obj);
+        });
+
+        return;
+    }
+
+    videoStream.startVideoStreaming(function () {
+        var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+        obj.options = options || {};
+
+        createAndGetGIF(obj, callback);
+    }, {
+        lastCameraStream: lastCameraStream,
+        callback: callback,
+        webcamVideoElement: webcamVideoElement,
+        crossOrigin: options.crossOrigin
+    });
+}
+
+/*
+  createGIF.js
+  ============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+function createGIF(userOptions, callback) {
+  callback = utils.isFunction(userOptions) ? userOptions : callback;
+  userOptions = utils.isObject(userOptions) ? userOptions : {};
+
+  if (!utils.isFunction(callback)) {
+    return;
+  }
+
+  var options = utils.mergeOptions(defaultOptions, userOptions) || {};
+  var lastCameraStream = userOptions.cameraStream;
+  var images = options.images;
+  var imagesLength = images ? images.length : 0;
+  var video = options.video;
+  var webcamVideoElement = options.webcamVideoElement;
+
+  options = utils.mergeOptions(options, {
+    'gifWidth': Math.floor(options.gifWidth),
+    'gifHeight': Math.floor(options.gifHeight)
+  });
+
+  // If the user would like to create a GIF from an existing image(s)
+  if (imagesLength) {
+    existingImages({
+      'images': images,
+      'imagesLength': imagesLength,
+      'callback': callback,
+      'options': options
+    });
+  } else if (video) {
+    // If the user would like to create a GIF from an existing HTML5 video
+    existingVideo({
+      'existingVideo': video,
+      callback: callback,
+      options: options
+    });
+  } else {
+    // If the user would like to create a GIF from a webcam stream
+    existingWebcam({
+      lastCameraStream: lastCameraStream,
+      callback: callback,
+      webcamVideoElement: webcamVideoElement,
+      options: options
+    });
+  }
+}
+
+/*
+  takeSnapShot.js
+  ===============
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+function takeSnapShot(userOptions, callback) {
+    callback = utils.isFunction(userOptions) ? userOptions : callback;
+    userOptions = utils.isObject(userOptions) ? userOptions : {};
+
+    if (!utils.isFunction(callback)) {
+        return;
+    }
+
+    var mergedOptions = utils.mergeOptions(defaultOptions, userOptions);
+    var options = utils.mergeOptions(mergedOptions, {
+        'interval': .1,
+        'numFrames': 1,
+        'gifWidth': Math.floor(mergedOptions.gifWidth),
+        'gifHeight': Math.floor(mergedOptions.gifHeight)
+    });
+
+    createGIF(options, callback);
+}
+
+/*
+  API.js
+  ======
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+*/
+
+// Dependencies
+var API = {
+  'utils': utils$2,
+  'error': error$2,
+  'defaultOptions': defaultOptions$2,
+  'createGIF': createGIF,
+  'takeSnapShot': takeSnapShot,
+  'stopVideoStreaming': stopVideoStreaming,
+  'isSupported': isSupported,
+  'isWebCamGIFSupported': isWebCamGIFSupported,
+  'isExistingVideoGIFSupported': isExistingVideoGIFSupported,
+  'isExistingImagesGIFSupported': isSupported$1,
+  'VERSION': '0.4.5'
+};
+
+/*
+  index.js
+  ========
+*/
+
+/* Copyright  2017 Yahoo Inc.
+ * Copyrights licensed under the MIT License. See the accompanying LICENSE file for terms.
+ */
+
+// Universal Module Definition (UMD) to support AMD, CommonJS/Node.js, and plain browser loading
+if (true) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+        return API;
+    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+} else if (typeof exports !== 'undefined') {
+    module.exports = API;
+} else {
+    window.gifshot = API;
+}
+}(typeof window !== "undefined" ? window : {}, typeof document !== "undefined" ? document : { createElement: function() {} }, typeof window !== "undefined" ? window.navigator : {}));
+
+
+/***/ }),
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(41);
+var content = __webpack_require__(45);
 if(typeof content === 'string') content = [[module.i, content, '']];
 // Prepare cssTransformation
 var transform;
@@ -49597,7 +54019,7 @@ var transform;
 var options = {"hmr":true}
 options.transform = transform
 // add the styles to the DOM
-var update = __webpack_require__(43)(content, options);
+var update = __webpack_require__(47)(content, options);
 if(content.locals) module.exports = content.locals;
 // Hot Module Replacement
 if(false) {
@@ -49614,21 +54036,21 @@ if(false) {
 }
 
 /***/ }),
-/* 41 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(42)(undefined);
+exports = module.exports = __webpack_require__(46)(undefined);
 // imports
 
 
 // module
-exports.push([module.i, "html, body {\n  height: 100%;\n  width: 100%;\n  padding: 0px;\n  margin: 0px;\n}\nbody {\n  color: #444444;\n  background-color: #ffffff;\n  font-family: sans-serif;\n}\np {\n  font-size: 0.8em;\n}\n#root {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  bottom: 0px;\n  cursor: crosshair;\n}\n#root .float {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  /*bottom: 0px;*/\n}\n#root p.float {\n  background: #ffffff;\n  color: #111111;\n  border: 2px solid #444444;\n  text-align: center;\n  font-size: 1.5em;\n  margin: 2.0em 8em;\n  padding: 0.8em;\n  opacity: 0.6;\n}\n", ""]);
+exports.push([module.i, "html, body {\n  height: 100%;\n  width: 100%;\n  padding: 0px;\n  margin: 0px;\n}\nbody {\n  color: #222222;\n  background-color: #ffffff;\n  font-family: sans-serif;\n}\np {\n  font-size: 0.8em;\n}\n#root {\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  bottom: 0px;\n  cursor: crosshair;\n}\n#root .float {\n  position: absolute;\n  top: 0px;\n  left: 0px;\n  right: 0px;\n  /*bottom: 0px;*/\n}\n#root p.float {\n  font-family: DejaVu Sans Mono, monospace;\n  background: #ffffff;\n  color: #111111;\n  border: 2px dashed #CCCCCC;\n  text-align: left;\n  font-size: 1.0em;\n  margin: 2.0em 8em;\n  padding: 0.8em;\n  animation: cssAnimation 3s forwards;\n}\n#root p.float:hover {\n  animation-play-state: paused;\n  background: #ffffee;\n  border: 2px solid #888888;\n  opacity: 0.95;\n}\n\n#root.capture-mode img.output {\n  border: 3px solid #444444;\n}\n#root.capture-mode canvas {\n  border: 3px solid #11ff11;\n}\n\n@keyframes cssAnimation {\n  00%  {opacity: 0.1;}\n  30%  {opacity: 0.6;}\n  75%  {opacity: 0.6;}\n  80%  {opacity: 0.7;}\n  85%  {opacity: 0.6;}\n  90%  {opacity: 0.8;}\n  100% {opacity: 0.0; display: none;}\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 42 */
+/* 46 */
 /***/ (function(module, exports) {
 
 /*
@@ -49710,7 +54132,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 43 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -49766,7 +54188,7 @@ var singleton = null;
 var	singletonCounter = 0;
 var	stylesInsertedAtTop = [];
 
-var	fixUrls = __webpack_require__(44);
+var	fixUrls = __webpack_require__(48);
 
 module.exports = function(list, options) {
 	if (typeof DEBUG !== "undefined" && DEBUG) {
@@ -50082,7 +54504,7 @@ function updateLink (link, options, obj) {
 
 
 /***/ }),
-/* 44 */
+/* 48 */
 /***/ (function(module, exports) {
 
 
