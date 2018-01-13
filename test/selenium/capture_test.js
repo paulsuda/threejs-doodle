@@ -49,6 +49,6 @@ test('no 16 high quality', t => {
     { captureTimeout: 120 * 1000 });
 });
 
-test('Capturing no. 8', t => {
+test('no 8 w defaults', t => {
   return testCapture(t, 8);
 });
