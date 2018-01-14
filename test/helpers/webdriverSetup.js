@@ -10,8 +10,10 @@ function webdriverSetup(t){
 }
 
 function webdriverCleanUp(t){
-  t.context.driver.manage().logs().get("browser").then((l) => {
-    console.log('console:', l);
+  t.context.driver.manage().logs().get("browser").then((messages) => {
+    if(messages.length >= 1){
+      console.log('Webdriver Console:', messages);      
+    }
   });
   return t.context.driver.quit();
 }

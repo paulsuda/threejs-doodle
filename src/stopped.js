@@ -4,7 +4,7 @@ const { initRenderCanvas } = require('./shared/util');
 
 function main(rootEl) {
   const [w, h, renderer] = initRenderCanvas(rootEl);
-  const camera = new THREE.PerspectiveCamera( 70, w / h, 1, 1000 );
+  const camera = new THREE.PerspectiveCamera( 50, w / h, 1, 1000 );
 	camera.position.z = 400;
 	const scene = new THREE.Scene();
 	var geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
@@ -14,17 +14,17 @@ function main(rootEl) {
     shininess: 50
   }  );
   {
-    const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
+    const light = new THREE.PointLight( 0xFFFFFF, .7, 1500 );
     light.position.set( 200, 250, 300 );
     scene.add( light );
   }
   {
-    const light = new THREE.PointLight( 0x333333, 2, 800 );
-    light.position.set( -350, -350, -100 );
+    const light = new THREE.PointLight( 0xFFFFFF, .2, 800 );
+    light.position.set( -550, -550, 30 );
     scene.add( light );
   }
   {
-    const light = new THREE.PointLight( 0x333333, 2, 1200 );
+    const light = new THREE.PointLight( 0xFFFFFF, .7, 1200 );
     light.position.set( 200, -650, 100 );
     scene.add( light );
   }
