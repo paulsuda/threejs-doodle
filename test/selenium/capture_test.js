@@ -7,7 +7,7 @@ initWebdriverTests(test);
 test('no 16 high quality', t => {
   return testCapture(t, 16,
     { w: 640, h: 480, t: 0.03, n: 204, s: 2 },
-    { captureTimeout: 3 * 60 * 1000 });
+    { captureTimeout: 4 * 60 * 1000 });
 });
 
 test('no 16 med quality', t => {
