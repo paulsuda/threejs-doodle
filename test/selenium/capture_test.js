@@ -1,6 +1,5 @@
 
 const fs = require('fs');
-const padStart = require('string.prototype.padStart');
 const path = require('path');
 const queryString = require('query-string');
 const test = require('ava');
@@ -20,7 +19,7 @@ function testCapture(t, captureIndex, captureQueryOptions, options){
   }, captureQueryOptions);
   const captureQueryString = queryString.stringify(captureQueryParams);
   const captureUrl = `http://localhost:9000/?${captureQueryString}#${captureIndex}`;
-  console.log('capturing w query', captureUrl, captureQueryParams);
+  t.log(`capturing ${captureUrl}`);
   return driver.get(captureUrl).then(() => {
     return driver.wait(webdriver.until.elementLocated(webdriver.By.css('img.output')), captureTimeout);
   }).then(() => {

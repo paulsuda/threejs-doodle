@@ -15,3 +15,14 @@ test('page loads with title', t => {
     t.is(title, "threejs-doodle");
   });
 });
+
+test('no 8 loads', t => {
+  let driver = t.context.driver;
+  return driver.get('http://localhost:9000/#8').then(() => {
+    return driver.wait(webdriver.until.titleIs('threejs-doodle'), 1000);
+  }).then(() => {
+    return driver.getTitle();
+  }).then((title) => {
+    t.is(title, "threejs-doodle");
+  });
+});
