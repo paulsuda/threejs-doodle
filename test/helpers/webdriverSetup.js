@@ -11,9 +11,11 @@ function webdriverSetup(t){
 
 function webdriverCleanUp(t){
   t.context.driver.manage().logs().get("browser").then((messages) => {
-    if(messages.length >= 1){
-      console.log('Webdriver Console:', messages);      
-    }
+    messages.forEach((message) => {
+      if(message.level.name == 'SEVERE'){
+        t.fail(`Console errors found "${message.message}"`);
+      }
+    });
   });
   return t.context.driver.quit();
 }
