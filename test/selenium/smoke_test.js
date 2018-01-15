@@ -16,10 +16,21 @@ test('default page loads with title', t => {
   });
 });
 
-test('no 8 loads w no errors', t => {
-  let driver = t.context.driver;
+test('no 8 loads in capture mode w no errors', t => {
+  const runForSeconds = 4;
+  const driver = t.context.driver;
   return driver.get('http://localhost:9000/#8?capture=1').then(() => {
-    return driver.sleep(4 * 1000);
+    return driver.sleep(runForSeconds * 1000);
+  }).then(() => {
+    t.pass();
+  });
+});
+
+test('no 10 loads and runs in interactive mode w no errors', t => {
+  const runForSeconds = 4;
+  const driver = t.context.driver;
+  return driver.get('http://localhost:9000/#10').then(() => {
+    return driver.sleep(runForSeconds * 1000);
   }).then(() => {
     t.pass();
   });

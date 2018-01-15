@@ -28,7 +28,7 @@ function main(rootEl, [w,h]) {
   var messageText = 'fu';
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, null, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(

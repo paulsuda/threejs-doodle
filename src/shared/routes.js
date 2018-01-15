@@ -23,7 +23,7 @@ function routeListenAndInit(moduleList, routeFn){
     try {
       routeIndex = getLocationModuleIndex(moduleList);
     } catch(err) {
-      console.error('err get location', err);
+      //
     }
     routeFn(routeIndex);
   }
