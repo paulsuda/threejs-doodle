@@ -5,36 +5,54 @@ const velocityShaderCode = require('./velocity.glsl');
 const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
 const ComputeBufferGeometry = require('../shared/compute/ComputeBufferGeometry');
 
+class ComputeArrayBufferGeometry extends ComputeBufferGeometry {
+  constructor(textureWidth, vectorSizeInit) {
+    const vectorSize = vectorSizeInit || 4;
+    const pointCount = textureWidth * textureWidth;
+    const vertexFloatArray = new Float32Array( pointCount * vectorSize );
+    const vertices = new THREE.BufferAttribute( vertexFloatArray, vectorSize );
+    vertices.dynamic = true;
+    super(vertices);
+    this.computeTextureWidth = textureWidth;
+    this.computeVectorSize = vectorSize;
+  }
+
+  setInitialValues(fn) {
+    const pointCount = this.computeTextureWidth * this.computeTextureWidth;
+    const vertices = this.attributes.position;
+    for(var i = 0; i < pointCount; i++){
+      const values = fn(i);
+      for(var j = 0; j < this.vectorSize; j++){
+        vertices.array[i * 4 + j] = values[j];
+      }
+    }
+  }
+}
 
 function pointsBufferGeometry(textureWidth) {
   const pointCount = textureWidth * textureWidth;
-  const vertexFloatArray = new Float32Array( pointCount * 4 );
-	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
-  vertices.dynamic = true;
+  const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
+  const vertices = bufferGeometry.attributes.position;
   for(var i = 0; i < pointCount; i++){
     vertices.array[i * 4] =  Math.random() - 0.5;
     vertices.array[i * 4 + 1] = Math.random() - 0.5;
     vertices.array[i * 4 + 2] = Math.random() - 0.5;
     vertices.array[i * 4 + 3] = 1.0;
   }
-  const bufferGeometry = new ComputeBufferGeometry(vertices);
-  console.log(bufferGeometry)
-  return [bufferGeometry, vertices];
+  return bufferGeometry;
 }
 
 function velocitiesBufferGeometry(textureWidth) {
   const pointCount = textureWidth * textureWidth;
-  const vertexFloatArray = new Float32Array( pointCount * 4 );
-	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
-  vertices.dynamic = true;
+  const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
+  const vertices = bufferGeometry.attributes.position;
   for(var i = 0; i < pointCount; i++){
     vertices.array[i * 4] = 0.0;
     vertices.array[i * 4 + 1] = 0.0;
     vertices.array[i * 4 + 2] = 0.0;
     vertices.array[i * 4 + 3] = 1.0;
   }
-  const bufferGeometry = new ComputeBufferGeometry(vertices);
-  return [bufferGeometry, vertices];
+  return bufferGeometry;
 }
 
 function main(rootEl) {
@@ -53,12 +71,12 @@ function main(rootEl) {
 	const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F8F8);
 
-  var [_, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
-  velocityGeometryVertices.dynamic = true;
+  var velocityBufferGeometry = velocitiesBufferGeometry(textureWidth);
+  const velocityGeometryVertices = velocityBufferGeometry.attributes.position;
 
-	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
+	var positionBufferGeometry = pointsBufferGeometry(textureWidth);
+  const positionGeometryVertices = positionBufferGeometry.attributes.position;
 	const points = new THREE.Points( positionBufferGeometry, material );
-  positionBufferGeometry.dynamic = true;
 
   const group = new THREE.Group();
   group.add(points);
