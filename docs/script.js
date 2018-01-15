@@ -45129,10 +45129,8 @@ function CanvasRenderer() {
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-
 const marked = __webpack_require__(13);
 const THREE = __webpack_require__(0);
-
 
 function showDescription(rootEl, number, mainFn) {
   const description = (typeof mainFn.description === 'string') ?
@@ -45141,7 +45139,6 @@ function showDescription(rootEl, number, mainFn) {
   const srcBase = 'https://github.com/paulsuda/threejs-doodle/blob/master/';
   htmlMessage(rootEl, marked(`${description}\n\n### No. ${number}: [${src}](${srcBase}${src})\n`));
 }
-
 
 function cubeFrame(size){
   const geometry = new THREE.BoxBufferGeometry( size, size, size );
@@ -50242,7 +50239,7 @@ function main(rootEl, [w,h]) {
   var messageText = 'fu';
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, null, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
@@ -50354,7 +50351,7 @@ function main(rootEl, [w,h]) {
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, null, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
@@ -50446,7 +50443,7 @@ function main(rootEl, [w,h]) {
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1, 10000 );
   var renderer;
   [w, h, renderer] = initRenderCanvas(
-    rootEl, (rw, rh) => { return handleResize(camera, rw, rh) }
+    rootEl, null, (rw, rh) => { return handleResize(camera, rw, rh) }
   );
   const windowScale = new THREE.Vector3(w / 1440.0, h / 759.0, Math.max(w / 1440.0, h / 759.0) );
   camera.position.set(
@@ -51090,7 +51087,7 @@ const { initRenderCanvas } = __webpack_require__(1);
 
 function main(rootEl) {
   const [w, h, renderer] = initRenderCanvas(rootEl);
-  const camera = new THREE.PerspectiveCamera( 70, w / h, 1, 1000 );
+  const camera = new THREE.PerspectiveCamera( 50, w / h, 1, 1000 );
 	camera.position.z = 400;
 	const scene = new THREE.Scene();
 	var geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
@@ -51100,17 +51097,17 @@ function main(rootEl) {
     shininess: 50
   }  );
   {
-    const light = new THREE.PointLight( 0xcccccc, 2, 1500 );
+    const light = new THREE.PointLight( 0xFFFFFF, .7, 1500 );
     light.position.set( 200, 250, 300 );
     scene.add( light );
   }
   {
-    const light = new THREE.PointLight( 0x333333, 2, 800 );
-    light.position.set( -350, -350, -100 );
+    const light = new THREE.PointLight( 0xFFFFFF, .2, 800 );
+    light.position.set( -550, -550, 30 );
     scene.add( light );
   }
   {
-    const light = new THREE.PointLight( 0x333333, 2, 1200 );
+    const light = new THREE.PointLight( 0xFFFFFF, .7, 1200 );
     light.position.set( 200, -650, 100 );
     scene.add( light );
   }
@@ -51161,7 +51158,7 @@ function routeListenAndInit(moduleList, routeFn){
     try {
       routeIndex = getLocationModuleIndex(moduleList);
     } catch(err) {
-      console.error('err get location', err);
+      //
     }
     routeFn(routeIndex);
   }
