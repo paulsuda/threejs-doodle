@@ -21,11 +21,14 @@ function velocitiesBufferGeometry(textureWidth) {
 function main(rootEl) {
   const textureWidth = 128;
   var material = new THREE.PointsMaterial({
-    size: 0.06,
-    color: 0xddcc44,
-    opacity: 0.5,
-    transparent: true,
+    size: 3.0,
+    // color: 0xFF0000,
+    vertexColors: THREE.VertexColors,
+    // alphaTest: 0.9,
+    // transparent: true,
+    sizeAttenuation: false,
   });
+  // material.color.setHSL( 1.0, 0.2, 0.7 );
 
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1.0, 5.0 );
@@ -37,15 +40,32 @@ function main(rootEl) {
   var velocityBufferGeometry = velocitiesBufferGeometry(textureWidth);
   const velocityGeometryVertices = velocityBufferGeometry.attributes.position;
 
+  function generateColorRange(vertices, n){
+    const colors = new Float32Array(n * 3);
+    for(let i = 0; i < n; i += 1){
+      const x = vertices[i * 4];
+      const y = vertices[i * 4 + 1];
+      const z = vertices[i * 4 + 2];
+      const newColor = new THREE.Color();
+      newColor.setRGB(x + 0.5, y + 0.5, z + 0.5);
+      colors[i * 3] = newColor.r;
+      colors[i * 3 + 1] = newColor.g;
+      colors[i * 3 + 2] = newColor.b;
+    }
+    return colors;
+  }
+
 	var positionBufferGeometry = pointsBufferGeometry(textureWidth);
   const positionGeometryVertices = positionBufferGeometry.attributes.position;
-	const points = new THREE.Points( positionBufferGeometry, material );
 
+  positionBufferGeometry.addAttribute( 'color', new THREE.BufferAttribute(
+    generateColorRange(positionGeometryVertices.array, textureWidth * textureWidth), 3 ) );
+
+
+	const points = new THREE.Points( positionBufferGeometry, material );
   const group = new THREE.Group();
   group.add(points);
-
   scene.add( group );
-
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
