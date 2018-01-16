@@ -3,39 +3,20 @@ const { cubeFrame, initRenderCanvas } = require('../shared/util');
 const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
 const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
+const ComputeArrayBufferGeometry = require('../shared/compute/ComputeArrayBufferGeometry');
+
 
 function pointsBufferGeometry(textureWidth) {
-  const pointCount = textureWidth * textureWidth;
-  const bufferGeometry = new THREE.BufferGeometry();
-  const vertexFloatArray = new Float32Array( pointCount * 4 );
-	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
-  vertices.dynamic = true;
-  bufferGeometry.dynamic = true;
-  for(var i = 0; i < pointCount; i++){
-    vertices.array[i * 4] =  Math.random() - 0.5;
-    vertices.array[i * 4 + 1] = Math.random() - 0.5;
-    vertices.array[i * 4 + 2] = Math.random() - 0.5;
-    vertices.array[i * 4 + 3] = 1.0;
-  }
-  bufferGeometry.addAttribute('position', vertices);
-  return [bufferGeometry, vertices];
+  const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
+  const r = () => Math.random() - 0.5;
+  bufferGeometry.setInitialValues((_) => [r(), r(), r(), 1.0]);
+  return bufferGeometry;
 }
 
 function velocitiesBufferGeometry(textureWidth) {
-  const pointCount = textureWidth * textureWidth;
-  const bufferGeometry = new THREE.BufferGeometry();
-  const vertexFloatArray = new Float32Array( pointCount * 4 );
-	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
-  vertices.dynamic = true;
-  bufferGeometry.dynamic = true;
-  for(var i = 0; i < pointCount; i++){
-    vertices.array[i * 4] = 0.0;
-    vertices.array[i * 4 + 1] = 0.0;
-    vertices.array[i * 4 + 2] = 0.0;
-    vertices.array[i * 4 + 3] = 1.0;
-  }
-  bufferGeometry.addAttribute('position', vertices);
-  return [bufferGeometry, vertices];
+  const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
+  bufferGeometry.setInitialValues((_) => [0.0, 0.0, 0.0, 1.0]);
+  return bufferGeometry;
 }
 
 function main(rootEl) {
@@ -60,25 +41,17 @@ function main(rootEl) {
 	const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F8F8);
 
-  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
-  velocityGeometryVertices.dynamic = true;
+  var velocityBufferGeometry = velocitiesBufferGeometry(textureWidth);
+  var velocityGeometryVertices = velocityBufferGeometry.attributes.position;
 
-	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
+	var positionBufferGeometry = pointsBufferGeometry(textureWidth);
+  var positionGeometryVertices = positionBufferGeometry.attributes.position;
+
 	const points = new THREE.Points( positionBufferGeometry, material );
-  positionBufferGeometry.dynamic = true;
 
   const group = new THREE.Group();
   group.add(points);
-
-  // const geometry2 = new THREE.SphereGeometry( 0.5, 13, 9 );
-  // const points2 = new THREE.Points( geometry2, material2 );
-  // points2.rotation.x += 0.124;
-  // points2.rotation.y += 0.1;
-  // group.add(points2);
-  // group.add(cubeFrame(1.0));
-
   scene.add( group );
-
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
@@ -136,7 +109,7 @@ function main(rootEl) {
 main.src = __filename;
 
 main.description = `
-## Dot Physics 
+## Dot Physics
 Compute shaders and dots. Bounding box
 rebounds collisions and changes velocities now.
 Not as cool as the less real
