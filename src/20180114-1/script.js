@@ -21,12 +21,12 @@ function velocitiesBufferGeometry(textureWidth) {
 function main(rootEl) {
   const textureWidth = 128;
   var material = new THREE.PointsMaterial({
-    size: 3.0,
+    size: 0.02,
     // color: 0xFF0000,
     vertexColors: THREE.VertexColors,
     // alphaTest: 0.9,
     // transparent: true,
-    sizeAttenuation: false,
+    sizeAttenuation: true,
   });
   // material.color.setHSL( 1.0, 0.2, 0.7 );
 
@@ -44,10 +44,14 @@ function main(rootEl) {
     const colors = new Float32Array(n * 3);
     for(let i = 0; i < n; i += 1){
       const x = vertices[i * 4];
-      const y = vertices[i * 4 + 1];
       const z = vertices[i * 4 + 2];
       const newColor = new THREE.Color();
-      newColor.setRGB(x + 0.5, y + 0.5, z + 0.5);
+      var hue = (Math.atan( x / z ) / (1.0 * Math.PI) ) + 0.5;
+      if(x < 0.0){
+        hue += 1.0;
+      }
+      hue = hue / 2.0;
+      newColor.setHSL(hue, 0.96, 0.48);
       colors[i * 3] = newColor.r;
       colors[i * 3 + 1] = newColor.g;
       colors[i * 3 + 2] = newColor.b;
@@ -123,8 +127,8 @@ function main(rootEl) {
 main.src = __filename;
 
 main.description = `
-## Colors
-More dot physics, starting w colored dots.
+## Confetti Dot Physics
+More dot physics, party version.
 `;
 
 module.exports = main;
