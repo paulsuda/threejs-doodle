@@ -65,7 +65,7 @@ function main(rootEl) {
   points2.rotation.x += 0.124;
   points2.rotation.y += 0.1;
 
-  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
+  var [_velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
 
 	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);
 	const points = new THREE.Points( positionBufferGeometry, material );

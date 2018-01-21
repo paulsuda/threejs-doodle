@@ -1,5 +1,5 @@
 const THREE = require('three');
-const { cubeFrame, initRenderCanvas } = require('../shared/util');
+const { initRenderCanvas } = require('../shared/util');
 const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
 const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
@@ -46,12 +46,6 @@ function main(rootEl) {
     opacity: 0.5,
     transparent: true,
   }  );
-  var material2 = new THREE.PointsMaterial( {
-    size: 0.06,
-    color: 0xCCAA33,
-    opacity: 0.75,
-    transparent: true,
-  }  );
 
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1.0, 5.0 );
@@ -60,7 +54,7 @@ function main(rootEl) {
 	const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F8F8);
 
-  var [velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
+  var [_velocityBufferGeometry, velocityGeometryVertices] = velocitiesBufferGeometry(textureWidth);
   velocityGeometryVertices.dynamic = true;
 
 	var [positionBufferGeometry, positionGeometryVertices] = pointsBufferGeometry(textureWidth);

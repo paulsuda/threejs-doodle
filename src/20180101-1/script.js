@@ -1,15 +1,14 @@
 const THREE = require('three');
-const { cubeFrame, initRenderCanvas } = require('../shared/util');
+const { initRenderCanvas } = require('../shared/util');
 const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
 const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
 const ComputeArrayBufferGeometry = require('../shared/compute/ComputeArrayBufferGeometry');
 
-
 function pointsBufferGeometry(textureWidth) {
   const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
   const r = () => Math.random() - 0.5;
-  bufferGeometry.setInitialValues((_) => [r(), r(), r(), 1.0]);
+  bufferGeometry.setInitialValues((_) => [r(), r(), r(), 1.0])
   return bufferGeometry;
 }
 
@@ -25,12 +24,6 @@ function main(rootEl) {
     size: 0.06,
     color: 0xccccee,
     opacity: 0.5,
-    transparent: true,
-  }  );
-  var material2 = new THREE.PointsMaterial( {
-    size: 0.06,
-    color: 0xCCAA33,
-    opacity: 0.75,
     transparent: true,
   }  );
 

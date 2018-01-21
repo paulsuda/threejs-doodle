@@ -37,7 +37,7 @@ function computeInit(verticesArray, textureWidth, renderer){
   renderer.render( scene, camera, renderTarget );
   const returnValuesBuffer = new Float32Array( textureWidth * textureWidth * 4 );
   renderer.readRenderTargetPixels( renderTarget, 0, 0, textureWidth, textureWidth, returnValuesBuffer );
-  return [renderTarget, returnValuesBuffer];
+  return returnValuesBuffer;
 }
 
 function makeRenderTarget(textureWidth){
@@ -62,7 +62,6 @@ function pointsBufferGeometry(textureWidth) {
   const vertexFloatArray = new Float32Array( pointCount * 4 );
 	const vertices = new THREE.BufferAttribute( vertexFloatArray, 4 );
   for(var i = 0; i < pointCount; i++){
-    const f = parseFloat(i) / parseFloat(pointCount);
     vertices.array[i * 4] =  Math.random() - 0.5;
     vertices.array[i * 4 + 1] = Math.random() - 0.5;
     vertices.array[i * 4 + 2] = Math.random() - 0.5;
@@ -112,8 +111,8 @@ function main(rootEl) {
   group.rotation.x += -0.1;
   group.rotation.y += 0.1;
 
-  function updatePositions(inputVerticesArray, frameTimeSec){
-    const [renderTarget, returnValuesBuffer] =
+  function updatePositions(inputVerticesArray, _frameTimeSec){
+    const returnValuesBuffer =
       computeInit(inputVerticesArray, textureWidth, renderer);
     return returnValuesBuffer;
   }

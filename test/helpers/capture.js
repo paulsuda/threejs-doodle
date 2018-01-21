@@ -31,19 +31,50 @@ function compileFavicon(t, no){
   });
 }
 
+function testFetch(t, captureIndex, captureQueryOptions, _options){
+  const driver = t.context.driver;
+  const captureQueryString = queryString.stringify(captureQueryOptions);
+  const captureUrl = `http://localhost:9000/?${captureQueryString}#${captureIndex}`;
+  t.log(`capturing ${captureUrl}`);
+  return driver.get(captureUrl);
+}
+
+function testDryRun(t, captureIndex, captureQueryOptions, options){
+  const driver = t.context.driver;
+  const captureQueryParams = Object.assign({
+    capture: 'true',
+    dryRun: 'true'
+  }, captureQueryOptions);
+  const { runForSeconds } = Object.assign({
+    runForSeconds: 4,
+  }, options);
+  return testFetch(t, captureIndex, captureQueryParams, options).then(() => {
+    return driver.sleep(runForSeconds * 1000);
+  }).then(() => {
+    t.pass();
+    return;
+  });
+}
+
 function testCapture(t, captureIndex, captureQueryOptions, options){
   const driver = t.context.driver;
+
   const { captureTimeout, saveCapturePath } = Object.assign({
     captureTimeout: 8000,
     saveCapturePath: './docs/gif-captures/',
   }, options);
   const captureQueryParams = Object.assign({
     capture: 'true',
+    w: 320,
+    h: 240,
   }, captureQueryOptions);
-  const captureQueryString = queryString.stringify(captureQueryParams);
-  const captureUrl = `http://localhost:9000/?${captureQueryString}#${captureIndex}`;
-  t.log(`capturing ${captureUrl}`);
-  return driver.get(captureUrl).then(() => {
+  const saveName = `no${captureIndex}-w${captureQueryParams.w}-h${captureQueryParams.h}.gif`;
+  const savePathName = path.join(saveCapturePath, saveName);
+  if (fs.existsSync(savePathName)) {
+    console.log(`Dry run with "${savePathName}", file already exists`);
+    return testDryRun(t, captureIndex, captureQueryOptions, options);
+  }
+  return testFetch(t, captureIndex, captureQueryParams, options).then(() => {
     return driver.wait(webdriver.until.elementLocated(webdriver.By.css('img.output')), captureTimeout);
   }).then(() => {
     return driver.findElements(webdriver.By.css('img.output'));
@@ -56,10 +87,10 @@ function testCapture(t, captureIndex, captureQueryOptions, options){
       outputImg.getAttribute('src'),
     ]);
   }).then(([imgWidth, imgHeight, imgBase64Src]) => {
+    t.is(captureQueryParams.w, imgWidth);
+    t.is(captureQueryParams.h, imgHeight);
     t.is(imgBase64Src.slice(0, 22), 'data:image/gif;base64,');
     const imgBase64 = imgBase64Src.slice(22, -1);
-    const saveName = `no${captureIndex}-w${imgWidth}-h${imgHeight}.gif`;
-    const savePathName = path.join(saveCapturePath, saveName);
     let imgDataBuffer = new Buffer(imgBase64, 'base64');
     return new Promise(resolve => fs.writeFile(savePathName, imgDataBuffer, resolve));
   });

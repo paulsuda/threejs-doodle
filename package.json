@@ -7,7 +7,8 @@
     "test": "ava --verbose --serial",
     "start": "webpack-dev-server",
     "build": "webpack",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "deploy": "npm run lint && npm run test && npm run build && echo 'commit and push to deploy'"
   },
   "author": "Paul Suda",
   "license": "MIT",

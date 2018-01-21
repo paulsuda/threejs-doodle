@@ -50,7 +50,7 @@ function getCanvasEl(rootEl){
   return el;
 }
 
-function captureMain(rootEl, i, width, height, timeIncrement, frameCount, skipFrames){
+function captureMain(rootEl, i, width, height, timeIncrement, frameCount, skipFrames, dryRun){
   console.log(`capturing index ${i}`);
   const animateHandler = setupShowIndex(rootEl, i, false);
   const frameDataList = [];
@@ -69,6 +69,11 @@ function captureMain(rootEl, i, width, height, timeIncrement, frameCount, skipFr
     else{
       console.log(`skipping recording of frame ${recordingFrame} + ${i % cycleFrames} of ${frameCount} at ${frameTime} seconds`);
     }
+  }
+  if(dryRun){
+    console.log('dry run mode, quitting now');
+    htmlMessage(rootEl, 'Dry run mode, quitting now...');
+    return;
   }
   console.log('building GIF image...');
   htmlMessage(rootEl, 'Building image...');
@@ -132,12 +137,13 @@ function main(rootEl) {
     const timeIncrement = parseFloat(urlParams.get('t')) || 0.1;
     const frameCount = parseInt(urlParams.get('n')) || 6;
     const skipFrames = parseInt(urlParams.get('s')) || 0;
+    const dryRun = parseInt(urlParams.get('dryRun')) || 0;
     rootEl.classList.add('capture-mode');
     rootEl.style.width = `${width}px`;
     rootEl.style.height = `${height}px`;
     const queryString = `?capture=1&w=${width}&h=${height}&t=${timeIncrement}&n=${frameCount}&s=${skipFrames}`;
     console.log(location.origin + location.pathname + queryString + location.hash);
-    return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount, skipFrames);
+    return captureMain(rootEl, moduleIndex, width, height, timeIncrement, frameCount, skipFrames, dryRun);
   }
   else{
     rootEl.style.width = "auto";
