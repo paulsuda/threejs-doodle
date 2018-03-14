@@ -73,6 +73,9 @@ function main(rootEl, [w,h]) {
     else if(event.key == 'c'){
       messageText += 'z';
     }
+    else if(event.key == 'k'){
+      messageText += 'z';
+    }
     return false;
   });
 
