@@ -15,8 +15,7 @@ function pointsBufferGeometry(textureWidth) {
 function velocitiesBufferGeometry(textureWidth) {
   const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
   bufferGeometry.setInitialValues((_) => {
-    const r = Math.random() * Math.PI * 2.0;
-    return [Math.cos(r), Math.sin(r), 0.0, 1.0]
+    return [0.0, 0.0, 0.0, 1.0]
   });
   console.log(bufferGeometry)
   return bufferGeometry;
@@ -125,8 +124,8 @@ function main(rootEl) {
 main.src = __filename;
 
 main.description = `
-## Confetti Dot Physics
-More dot physics, party version.
+## 2D Circle w Dots
+Randomized Brownian motion, collision with a circle.
 `;
 
 module.exports = main;
