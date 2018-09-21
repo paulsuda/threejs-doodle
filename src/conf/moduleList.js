@@ -1,5 +1,6 @@
 
 const moduleList = [
+  require('../20180920-1/script'), // 20
   require('../20180121-1/script'),
   require('../20180114-1/script'),
   require('../20180101-1/script'),
