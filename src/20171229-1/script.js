@@ -64,13 +64,6 @@ function main(rootEl) {
   const group = new THREE.Group();
   group.add(points);
 
-  // const geometry2 = new THREE.SphereGeometry( 0.5, 13, 9 );
-  // const points2 = new THREE.Points( geometry2, material2 );
-  // points2.rotation.x += 0.124;
-  // points2.rotation.y += 0.1;
-  // group.add(points2);
-  // group.add(cubeFrame(1.0));
-
   scene.add( group );
 
   group.rotation.x += -0.1;
