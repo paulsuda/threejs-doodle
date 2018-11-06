@@ -39,7 +39,7 @@ function velocitiesBufferGeometry(textureWidth) {
 }
 
 function main(rootEl) {
-  const textureWidth = 256;
+  const textureWidth = 16;
   var material = new THREE.PointsMaterial( {
     size: 0.06,
     color: 0xccccee,

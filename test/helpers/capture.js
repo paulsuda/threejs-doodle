@@ -87,8 +87,8 @@ function testCapture(t, captureIndex, captureQueryOptions, options){
       outputImg.getAttribute('src'),
     ]);
   }).then(([imgWidth, imgHeight, imgBase64Src]) => {
-    t.is(captureQueryParams.w, imgWidth);
-    t.is(captureQueryParams.h, imgHeight);
+    t.is(captureQueryParams.w + 'px', imgWidth);
+    t.is(captureQueryParams.h + 'px', imgHeight);
     t.is(imgBase64Src.slice(0, 22), 'data:image/gif;base64,');
     const imgBase64 = imgBase64Src.slice(22, -1);
     let imgDataBuffer = new Buffer(imgBase64, 'base64');

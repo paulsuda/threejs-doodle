@@ -10,7 +10,7 @@ float seedConst = 500000.0;
 // seed between -1, 1
 // From: https://thebookofshaders.com/10/
 float seedRandom(float x, float seed){
-  return fract(sin(x) * 500000.0 * seed);
+  return fract(sin(x) * seedConst * seed);
 }
 
 vec2 seedRandom2d(vec2 uv, float seed){
@@ -28,6 +28,5 @@ void main() {
      v.x = -v.x * bounceFactor;
      v.y = -v.y * bounceFactor;
    }
-
    gl_FragColor = v;
 }
