@@ -4,9 +4,10 @@
   "description": "My Threejs experiments.",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test-chromedriver",
-    "test-ava": "ava --verbose --serial",
+    "test": "npm run test-local-server",
+    "test-local-server": "npm start & npm run test-chromedriver ; kill %1",
     "test-chromedriver": "chromedriver & npm run test-ava ; kill %1",
+    "test-ava": "ava --verbose --serial",
     "start": "webpack-dev-server",
     "build": "webpack",
     "lint": "eslint src",
