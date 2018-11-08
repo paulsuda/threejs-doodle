@@ -2,24 +2,7 @@ const THREE = require('three');
 const { initRenderCanvas } = require('../shared/util');
 const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
-const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
-const ComputeArrayBufferGeometry = require('../shared/compute/ComputeArrayBufferGeometry');
-
-function pointsBufferGeometry(textureWidth) {
-  const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
-  const r = () => Math.random() - 0.5;
-  bufferGeometry.setInitialValues((_) => [r(), r(), 0.0, 1.0]);
-  return bufferGeometry;
-}
-
-function velocitiesBufferGeometry(textureWidth) {
-  const bufferGeometry = new ComputeArrayBufferGeometry(textureWidth);
-  bufferGeometry.setInitialValues((_) => {
-    return [0.0, 0.0, 0.0, 1.0]
-  });
-  console.log(bufferGeometry)
-  return bufferGeometry;
-}
+const SwappedComputeShaderRunner = require('../shared/compute/SwappedComputeShaderRunner');
 
 function main(rootEl) {
   const textureWidth = 128;
@@ -41,9 +24,6 @@ function main(rootEl) {
 	const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F8F8);
 
-  var velocityBufferGeometry = velocitiesBufferGeometry(textureWidth);
-  const velocityGeometryVertices = velocityBufferGeometry.attributes.position;
-
   function generateColorRange(vertices, n){
     const colors = new Float32Array(n * 3);
     const red = new THREE.Color(0xFF0000);
@@ -58,62 +38,57 @@ function main(rootEl) {
     return colors;
   }
 
-	var positionBufferGeometry = pointsBufferGeometry(textureWidth);
-  const positionGeometryVertices = positionBufferGeometry.attributes.position;
-
-  positionBufferGeometry.addAttribute( 'color', new THREE.BufferAttribute(
-    generateColorRange(positionGeometryVertices.array, textureWidth * textureWidth), 3 ) );
-
-
-	const points = new THREE.Points( positionBufferGeometry, material );
-  const group = new THREE.Group();
-  group.add(points);
-  scene.add( group );
-
   const uniforms = [
     {name: 'positionTexture', format: THREE.RGBAFormat},
     {name: 'velocityTexture', format: THREE.RGBAFormat},
     {name: 'frameTimeSec', format: THREE.FloatType},
   ];
 
-  const velocityRunner = new ComputeShaderRunner(
-    renderer, textureWidth, uniforms, velocityShaderCode);
-  var computedVelocities = velocityRunner.createComputeReturnBuffer();
-  var oldVelocities = velocityGeometryVertices.array;
+  const velocityRunner = new SwappedComputeShaderRunner(
+    renderer, textureWidth, uniforms, velocityShaderCode, (_) => {
+      return [0.0, 0.0, 0.0, 1.0]
+    });
 
-  const positionRunner = new ComputeShaderRunner(
-    renderer, textureWidth, uniforms, positionShaderCode);
-  var computedVertices = positionRunner.createComputeReturnBuffer();
-  var oldVertices = positionGeometryVertices.array;
+  const r = () => Math.random() - 0.5;
+  const positionRunner = new SwappedComputeShaderRunner(
+    renderer, textureWidth, uniforms, positionShaderCode, (_) => [r(), r(), 0.0, 1.0]);
+
+  positionRunner.bufferGeometry.addAttribute( 'color', new THREE.BufferAttribute(
+    generateColorRange(positionRunner.geometryVertices.array, textureWidth * textureWidth), 3 ) );
+
+	const points = new THREE.Points( positionRunner.bufferGeometry, material );
+  const group = new THREE.Group();
+  group.add(points);
+  scene.add( group );
 
   function animate(frameTimeSec){
     /* Calculate updated velocity vectors. */
     velocityRunner.computeRun({
-      positionTexture: oldVertices,
-      velocityTexture: oldVelocities,
+      positionTexture: positionRunner.old,
+      velocityTexture: velocityRunner.old,
       frameTimeSec: frameTimeSec,
-    }, computedVelocities);
-    velocityGeometryVertices.setArray(computedVelocities);
-    velocityGeometryVertices.needsUpdate = true;
+    }, velocityRunner.computed);
+    velocityRunner.geometryVertices.setArray(velocityRunner.computed);
+    velocityRunner.geometryVertices.needsUpdate = true;
 
     /* Move positions by their respective velocities. */
     positionRunner.computeRun({
-      positionTexture: oldVertices,
-      velocityTexture: computedVelocities,
+      positionTexture: positionRunner.old,
+      velocityTexture: velocityRunner.computed,
       frameTimeSec: frameTimeSec,
-    }, computedVertices);
-    positionGeometryVertices.setArray(computedVertices);
-    positionGeometryVertices.needsUpdate = true;
+    }, positionRunner.computed);
+    positionRunner.geometryVertices.setArray(positionRunner.computed);
+    positionRunner.geometryVertices.needsUpdate = true;
 
     /* Double buffer swap old and new */
     var s;
-    s = oldVelocities;
-    oldVelocities = computedVelocities;
-    computedVelocities = s;
+    s = velocityRunner.old;
+    velocityRunner.old = velocityRunner.computed;
+    velocityRunner.computed = s;
 
-    s = oldVertices;
-    oldVertices = computedVertices;
-    computedVertices = s;
+    s = positionRunner.old;
+    positionRunner.old = positionRunner.computed;
+    positionRunner.computed = s;
 
     renderer.render( scene, camera );
   }

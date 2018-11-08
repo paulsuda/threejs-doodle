@@ -18,7 +18,8 @@ class ComputeShaderRunner {
     this.fragmentShaderCode = fragmentShaderCode;
     computeTextureSupportCheck(renderer);
     this.renderTarget = this.makeRenderTarget();
-    [this.scene, this.camera] = this.makeSceneCamera();
+    this.scene = this.makeScene();
+    this.camera = this.makeCamera();
     [this.shaderMaterial, this.shaderUniforms] = this.makeComputeShaderMaterial();
     this.computeMesh = this.makeComputeMesh();
     this.scene.add(this.computeMesh);
@@ -30,11 +31,14 @@ class ComputeShaderRunner {
     return computeMesh;
   }
 
-  makeSceneCamera() {
-    var scene = new THREE.Scene();
+  makeScene(){
+    return new THREE.Scene();
+  }
+
+  makeCamera(){
     var camera = new THREE.Camera();
     camera.position.z = 1;
-    return [scene, camera];
+    return camera;
   }
 
   makeRenderTarget() {
