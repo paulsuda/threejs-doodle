@@ -65,18 +65,14 @@ function main(rootEl) {
       positionTexture: positionRunner.old,
       velocityTexture: velocityRunner.old,
       frameTimeSec: frameTimeSec,
-    }, velocityRunner.computed);
-    velocityRunner.geometryVertices.setArray(velocityRunner.computed);
-    velocityRunner.geometryVertices.needsUpdate = true;
+    });
 
     /* Move positions by their respective velocities. */
     positionRunner.computeRun({
       positionTexture: positionRunner.old,
       velocityTexture: velocityRunner.computed,
       frameTimeSec: frameTimeSec,
-    }, positionRunner.computed);
-    positionRunner.geometryVertices.setArray(positionRunner.computed);
-    positionRunner.geometryVertices.needsUpdate = true;
+    });
 
     /* Double buffer swap old and new */
     var s;
