@@ -75,14 +75,8 @@ function main(rootEl) {
     });
 
     /* Double buffer swap old and new */
-    var s;
-    s = velocityRunner.old;
-    velocityRunner.old = velocityRunner.computed;
-    velocityRunner.computed = s;
-
-    s = positionRunner.old;
-    positionRunner.old = positionRunner.computed;
-    positionRunner.computed = s;
+    velocityRunner.swapBuffers();
+    positionRunner.swapBuffers();
 
     renderer.render( scene, camera );
   }

@@ -21,9 +21,9 @@ class SwappedComputeShaderRunner extends ComputeShaderRunner{
   }
 
   swapBuffers() {
-    const s = this.compute;
-    this.compute = this.old;
-    this.old = s;
+    const s = this.old;
+    this.old = this.computed;
+    this.computed = s;
   }
 
   computeRun(uniformValues) {
