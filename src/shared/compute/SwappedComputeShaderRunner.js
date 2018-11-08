@@ -20,6 +20,18 @@ class SwappedComputeShaderRunner extends ComputeShaderRunner{
     return geometry;
   }
 
+  swapBuffers() {
+    const s = this.compute;
+    this.compute = this.old;
+    this.old = s;
+  }
+
+  computeRun(uniformValues) {
+    super.computeRun(uniformValues, this.computed);
+    this.geometryVertices.setArray(this.computed);
+    this.geometryVertices.needsUpdate = true;
+  }
+
 }
 
 module.exports = SwappedComputeShaderRunner;

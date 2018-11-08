@@ -45,9 +45,7 @@ function main(rootEl) {
   ];
 
   const velocityRunner = new SwappedComputeShaderRunner(
-    renderer, textureWidth, uniforms, velocityShaderCode, (_) => {
-      return [0.0, 0.0, 0.0, 1.0]
-    });
+    renderer, textureWidth, uniforms, velocityShaderCode, (_) => [0.0, 0.0, 0.0, 1.0]);
 
   const r = () => Math.random() - 0.5;
   const positionRunner = new SwappedComputeShaderRunner(
@@ -59,7 +57,7 @@ function main(rootEl) {
 	const points = new THREE.Points( positionRunner.bufferGeometry, material );
   const group = new THREE.Group();
   group.add(points);
-  scene.add( group );
+  scene.add(group);
 
   function animate(frameTimeSec){
     /* Calculate updated velocity vectors. */
