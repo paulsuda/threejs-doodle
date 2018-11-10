@@ -8,26 +8,22 @@ function main(rootEl) {
   const textureWidth = 128;
   var material = new THREE.PointsMaterial({
     size: 0.01,
-    // color: 0xFF0000,
     vertexColors: THREE.VertexColors,
-    // alphaTest: 0.9,
-    // transparent: true,
     sizeAttenuation: true,
   });
-  // material.color.setHSL( 1.0, 0.2, 0.7 );
 
   const [w, h, renderer] = initRenderCanvas(rootEl);
   const camera = new THREE.PerspectiveCamera( 45, w / h, 1.0, 5.0 );
-	camera.position.z = 3.0;
+	camera.position.z = 2.0;
   camera.position.x = 0.0;
   camera.position.y = 0.0;
 	const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xF8F8F8);
+  scene.background = new THREE.Color(0x000011);
 
   function generateColorRange(vertices, n){
     const colors = new Float32Array(n * 3);
-    const red = new THREE.Color(0xFF0000);
-    const blue = new THREE.Color(0x0000FF);
+    const red = new THREE.Color(0xeeFFcc);
+    const blue = new THREE.Color(0xFFddcc);
     for(let i = 0; i < n; i += 1){
       const x = vertices[i * 4];
       const newColor = x > 0.0 ? red : blue;
@@ -47,9 +43,19 @@ function main(rootEl) {
   const velocityRunner = new SwappedComputeShaderRunner(
     renderer, textureWidth, uniforms, velocityShaderCode, (_) => [0.0, 0.0, 0.0, 1.0]);
 
-  const r = () => Math.random() - 0.5;
+  const r = (_) => Math.random() - 0.5;
+
+  // const seedConst = 500000.0;
+  // const seed = 0.9235;
+  // function r(x){
+  //   return ((Math.sin(x) * seedConst * seed) % 1) - 0.5;
+  // }
+
   const positionRunner = new SwappedComputeShaderRunner(
-    renderer, textureWidth, uniforms, positionShaderCode, (_) => [r(), r(), 0.0, 1.0]);
+    renderer, textureWidth, uniforms, positionShaderCode, (i) => [
+      r((Math.floor(i % textureWidth)) / textureWidth),
+      r((Math.floor(i / textureWidth)) / textureWidth),
+      0.0, 1.0]);
 
   positionRunner.bufferGeometry.addAttribute( 'color', new THREE.BufferAttribute(
     generateColorRange(positionRunner.geometryVertices.array, textureWidth * textureWidth), 3 ) );
