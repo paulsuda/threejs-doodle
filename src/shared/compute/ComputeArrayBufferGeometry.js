@@ -2,10 +2,10 @@ const THREE = require('three');
 const ComputeBufferGeometry = require('./ComputeBufferGeometry');
 
 class ComputeArrayBufferGeometry extends ComputeBufferGeometry {
-  constructor(textureWidth, vectorSizeInit) {
+  constructor(textureWidth, vectorSizeInit, initVertexArray = null) {
     const vectorSize = vectorSizeInit || 4;
     const pointCount = textureWidth * textureWidth;
-    const vertexFloatArray = new Float32Array( pointCount * vectorSize );
+    const vertexFloatArray = initVertexArray  != null ? initVertexArray : new Float32Array( pointCount * vectorSize );
     const vertices = new THREE.BufferAttribute( vertexFloatArray, vectorSize );
     vertices.dynamic = true;
     super(vertices);

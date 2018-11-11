@@ -3,20 +3,16 @@ const ComputeArrayBufferGeometry = require('./ComputeArrayBufferGeometry');
 const ComputeShaderRunner = require('./ComputeShaderRunner')
 
 class SwappedComputeShaderRunner extends ComputeShaderRunner{
-  constructor(renderer, textureWidth, uniformInfoList, fragmentShaderCode, setInitialValuesFn = null){
+  constructor(renderer, textureWidth, uniformInfoList, fragmentShaderCode, initVertexArray = null){
     super(renderer, textureWidth, uniformInfoList, fragmentShaderCode);
-    this.setInitialValuesFn = setInitialValuesFn;
     this.computed = this.createComputeReturnBuffer();
-    this.bufferGeometry = this.createBufferGeometry();
+    this.bufferGeometry = this.createBufferGeometry(initVertexArray);
     this.geometryVertices = this.bufferGeometry.attributes.position;
     this.old = this.geometryVertices.array;
   }
 
-  createBufferGeometry() {
-    const geometry = new ComputeArrayBufferGeometry(this.textureWidth);
-    if(this.setInitialValuesFn){
-      geometry.setInitialValues(this.setInitialValuesFn);
-    }
+  createBufferGeometry(initVertexArray) {
+    const geometry = new ComputeArrayBufferGeometry(this.textureWidth, 4, initVertexArray);
     return geometry;
   }
 

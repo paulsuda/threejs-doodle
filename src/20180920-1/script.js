@@ -2,7 +2,11 @@ const THREE = require('three');
 const { initRenderCanvas } = require('../shared/util');
 const positionShaderCode = require('./position.glsl');
 const velocityShaderCode = require('./velocity.glsl');
+const valueFillShaderCode = require('./valueFill.glsl');
+const randomFillShaderCode = require('./randomFill.glsl');
 const SwappedComputeShaderRunner = require('../shared/compute/SwappedComputeShaderRunner');
+
+const ComputeShaderRunner = require('../shared/compute/ComputeShaderRunner');
 
 function main(rootEl) {
   const textureWidth = 128;
@@ -40,22 +44,21 @@ function main(rootEl) {
     {name: 'frameTimeSec', format: THREE.FloatType},
   ];
 
+  const velocityFillRunner = new ComputeShaderRunner(renderer, textureWidth, [
+    { name: 'fillValue', format: THREE.Vector4 },
+  ], valueFillShaderCode);
+  const initVelocity = velocityFillRunner.createComputeReturnBuffer();
+  velocityFillRunner.computeRun({'fillValue': [0.0, 0.0, 0.0, 1.0]}, initVelocity);
+
+  const randomFillRunner = new ComputeShaderRunner(renderer, textureWidth, [], randomFillShaderCode);
+  const initPosition = randomFillRunner.createComputeReturnBuffer();
+  randomFillRunner.computeRun({}, initPosition);
+
   const velocityRunner = new SwappedComputeShaderRunner(
-    renderer, textureWidth, uniforms, velocityShaderCode, (_) => [0.0, 0.0, 0.0, 1.0]);
-
-  const r = (_) => Math.random() - 0.5;
-
-  // const seedConst = 500000.0;
-  // const seed = 0.9235;
-  // function r(x){
-  //   return ((Math.sin(x) * seedConst * seed) % 1) - 0.5;
-  // }
+    renderer, textureWidth, uniforms, velocityShaderCode, initVelocity);
 
   const positionRunner = new SwappedComputeShaderRunner(
-    renderer, textureWidth, uniforms, positionShaderCode, (i) => [
-      r((Math.floor(i % textureWidth)) / textureWidth),
-      r((Math.floor(i / textureWidth)) / textureWidth),
-      0.0, 1.0]);
+    renderer, textureWidth, uniforms, positionShaderCode, initPosition);
 
   positionRunner.bufferGeometry.addAttribute( 'color', new THREE.BufferAttribute(
     generateColorRange(positionRunner.geometryVertices.array, textureWidth * textureWidth), 3 ) );
