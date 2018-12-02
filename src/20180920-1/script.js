@@ -48,11 +48,18 @@ function main(rootEl) {
     { name: 'fillValue', format: THREE.Vector4 },
   ], valueFillShaderCode);
   const initVelocity = velocityFillRunner.createComputeReturnBuffer();
-  velocityFillRunner.computeRun({'fillValue': [0.0, 0.0, 0.0, 1.0]}, initVelocity);
+  velocityFillRunner.computeRun({fillValue: [0.0, 0.0, 0.0, 1.0]}, initVelocity);
 
-  const randomFillRunner = new ComputeShaderRunner(renderer, textureWidth, [], randomFillShaderCode);
+  const randomFillRunner = new ComputeShaderRunner(renderer, textureWidth, [
+    { name: 'rangeMin', format: THREE.Float },
+    { name: 'rangeMax', format: THREE.Float },
+  ], randomFillShaderCode);
   const initPosition = randomFillRunner.createComputeReturnBuffer();
-  randomFillRunner.computeRun({}, initPosition);
+  randomFillRunner.computeRun({rangeMin: -0.5, rangeMax: 0.5}, initPosition);
+
+  // console.log('initPosition', initPosition);
+  //
+  // debugger;
 
   const velocityRunner = new SwappedComputeShaderRunner(
     renderer, textureWidth, uniforms, velocityShaderCode, initVelocity);

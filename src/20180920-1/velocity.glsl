@@ -21,7 +21,7 @@ void main() {
    vec2 uv = gl_FragCoord.xy / resolution.xy;
    vec4 p = texture2D( positionTexture, uv );
    vec4 v = texture2D( velocityTexture, uv );
-   v.xy += (seedRandom2d(uv, 0.9235) - 0.5) * 0.01;
+   // v.xy += (seedRandom2d(uv, 0.9235) - 0.5) * 0.01;
    vec4 nextP = p + (v * frameTimeSec);
    float l = sqrt(nextP.x * nextP.x + nextP.y * nextP.y);
    if(l > radius){

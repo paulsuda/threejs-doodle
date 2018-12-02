@@ -1,29 +1,20 @@
 
-float bounceFactor = 0.95;
-float radius = 0.8;
-float seedConst = 123562.0;
+const float PI = 3.1415926535897932;
+uniform float rangeMin;
+uniform float rangeMax;
+vec2 mainSeeds = vec2(13.0, 22420.035);
 
-float f(float x){
-  return x * x;
-}
-
-// x between -1, 1
-// seed between -1, 1
-// From: https://thebookofshaders.com/10/
 float seedRandom(float x, float seed){
-  return fract(f(x * seed * seedConst));
-  // return fract(sin(x) * seedConst * seed);
+  float r = fract(sin(x * seed) + sin(x * 2355.0));
+  return (r + rangeMin) * (rangeMax - rangeMin);
 }
 
-vec2 seedRandom2d(vec2 uv, float seed){
-  return vec2(seedRandom(uv.x, seed), seedRandom(uv.y, seed + 0.03532));
+vec2 seedRandom2d(vec2 uv, vec2 seed){
+  return vec2(seedRandom(uv.x, uv.y), seedRandom(uv.y, uv.x));
 }
 
 void main() {
   vec2 uv = gl_FragCoord.xy / resolution.xy;
-  float seed = 12345.0;
-  float seed2 = 1.5;
-  vec2 r = seedRandom2d(uv, 23.0);
-  // gl_FragColor = vec4(seedRandom(seedRandom(uv.x, seed), seed2) - 0.5, seedRandom(seedRandom(uv.y, seed), seed2) - 0.5, 0.0, 1.0);
-  gl_FragColor = vec4(r - vec2(0.5, 0.5), 0.0, 1.0);
+  vec2 r = seedRandom2d(uv, mainSeeds);
+  gl_FragColor = vec4(r.x, r.y, 0.0, 1.0);
 }
